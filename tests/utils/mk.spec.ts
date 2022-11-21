@@ -1,13 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import * as logger from '../../src/utils/logger';
 
 import * as mk from '../../src/utils/mk';
 
 describe('Test mk functions', () => {
-
-  const spyOnLogger = jest.spyOn(logger.logger, 'error');
 
   const BASE_DIR = './tests/files';
 
@@ -28,7 +25,7 @@ describe('Test mk functions', () => {
   });
 
   it('should make new dir', () => {
-    const filePath = `${BASE_DIR}/mkDir/mkDir1/mkDir2`;
+    const filePath = `${BASE_DIR}/mkDir1/mkDir2`;
     mk.mkDir(filePath);
     expect(mk.fileExists(filePath)).toBeTruthy();
     fs.rmSync(BASE_DIR, {
@@ -38,7 +35,7 @@ describe('Test mk functions', () => {
   });
 
   it('should make new file', () => {
-    const filePath = `${BASE_DIR}/mkDir/file.txt`;
+    const filePath = `${BASE_DIR}/mkDir2/file.txt`;
     mk.mkFile(filePath, 'test', () => {
       expect(mk.fileExists(filePath)).toBeTruthy();
       fs.rmSync(BASE_DIR, {

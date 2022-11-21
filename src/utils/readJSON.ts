@@ -15,8 +15,7 @@ const defaultConfig: IConfig = {
 
 export async function readJSON(): Promise<IConfig> {
   try {
-    const winPrefix = process.platform === 'win32' ? 'file://' : '';
-    const file = winPrefix + path.resolve('./creator.config.js');
+    const file = path.resolve('./creator.config.js');
     logger.info(`Reading file ${file}`);
     const GJSONExists = fileExists(file);
 
