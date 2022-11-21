@@ -1,6 +1,6 @@
 import { isPrimitiveType } from '../../src';
 
-describe('Test isPrimitiveType function', () => {
+describe('Test isPrimitiveType() function', () => {
 
   it('should return true for number', () => {
     expect(isPrimitiveType('number')).toBeTruthy();
