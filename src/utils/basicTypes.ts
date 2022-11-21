@@ -5,7 +5,8 @@ export const baseTypes: Record<string, boolean> = {
   any: true,
   void: true,
   null: true,
-  undefined: true
+  undefined: true,
+  unknown: true
 };
 
 export const basicTypesTestPayload: Record<string, any> = {
