@@ -1,5 +1,6 @@
 import path from 'path';
 
+import { dynamicImport } from './dynamicImport';
 import { logger } from './logger';
 import { fileExists } from './mk';
 
@@ -23,7 +24,7 @@ export async function readJSON(): Promise<IConfig> {
       return defaultConfig;
     }
 
-    const json = (await import(file)).default;
+    const json = (await dynamicImport(file)).default;
 
     if (!json) {
       return defaultConfig;
