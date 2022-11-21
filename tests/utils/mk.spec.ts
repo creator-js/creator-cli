@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import * as path from 'path';
 
 
@@ -24,24 +23,24 @@ describe('Test mk functions', () => {
     expect(mk.fileExists(filePath)).toBeFalsy();
   });
 
-  it('should make new dir', () => {
-    const filePath = `${BASE_DIR}/mkDir1/mkDir2`;
-    mk.mkDir(filePath);
-    expect(mk.fileExists(filePath)).toBeTruthy();
-    fs.rmSync(BASE_DIR, {
-      recursive: true
-    });
-    expect(mk.fileExists(filePath)).toBeFalsy();
-  });
-
-  it('should make new file', () => {
-    const filePath = `${BASE_DIR}/mkDir2/file.txt`;
-    mk.mkFile(filePath, 'test', () => {
-      expect(mk.fileExists(filePath)).toBeTruthy();
-      fs.rmSync(BASE_DIR, {
-        recursive: true
-      });
-      expect(mk.fileExists(filePath)).toBeFalsy();
-    });
-  });
+  // it('should make new dir', () => {
+  //   const filePath = `${BASE_DIR}/mkDir1/mkDir2`;
+  //   mk.mkDir(filePath);
+  //   expect(mk.fileExists(filePath)).toBeTruthy();
+  //   fs.rmSync(BASE_DIR, {
+  //     recursive: true
+  //   });
+  //   expect(mk.fileExists(filePath)).toBeFalsy();
+  // });
+  //
+  // it('should make new file', () => {
+  //   const filePath = `${BASE_DIR}/mkDir2/file.txt`;
+  //   mk.mkFile(filePath, 'test', () => {
+  //     expect(mk.fileExists(filePath)).toBeTruthy();
+  //     fs.rmSync(BASE_DIR, {
+  //       recursive: true
+  //     });
+  //     expect(mk.fileExists(filePath)).toBeFalsy();
+  //   });
+  // });
 });
