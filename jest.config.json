@@ -17,10 +17,7 @@
     "html",
     "json-summary"
   ],
-  "coveragePathIgnorePatterns": [
-    "<rootDir>/packages/*/src/react-app-env.d.ts",
-    "<rootDir>/packages/*/src/reportWebVitals.ts"
-  ],
+  "coveragePathIgnorePatterns": [],
   "moduleFileExtensions": [
     "js",
     "json",

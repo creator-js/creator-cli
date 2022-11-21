@@ -25,10 +25,10 @@ export const getTypeValue = (type: string): string | undefined => {
   }
 
   if (type === '') {
-    return undefined;
+    return 'undefined';
   }
 
-  return `${basicTypesTestPayload[type] || `{} as ${type}`}`;
+  return type in basicTypesTestPayload ? `${basicTypesTestPayload[type]}` : `{} as ${type}`;
 };
 
 export const isArrayType = (type: string): boolean => {
