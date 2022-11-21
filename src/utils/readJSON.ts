@@ -15,16 +15,25 @@ const defaultConfig: IConfig = {
 
 export async function readJSON(): Promise<IConfig> {
   try {
-    const file = path.resolve('./creator.config.js');
-    logger.info(`Reading file ${file}`);
-    const GJSONExists = fileExists(file);
+    const fileJS = path.resolve('./creator.config.js');
+    const fileMJS = path.resolve('./creator.config.mjs');
 
-    if (!GJSONExists) {
+    let file: string | undefined = undefined;
+
+    if (fileExists(fileJS)) {
+      file = fileJS;
+    } else if (fileExists(fileMJS)) {
+      file = fileMJS;
+    }
+
+    logger.info(`Reading file ${file}`);
+
+    if (file === '' || fileExists(fileJS)) {
       logger.info('creator.config.js not found. Using default config.');
       return defaultConfig;
     }
 
-    const json = (await dynamicImport(file)).default;
+    const json = (await dynamicImport(file as string)).default;
 
     if (!json) {
       return defaultConfig;
