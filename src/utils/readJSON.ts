@@ -1,7 +1,5 @@
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-import { dynamicImport } from './dynamicImport';
 import { logger } from './logger';
 import { fileExists } from './mk';
 
@@ -14,12 +12,9 @@ const defaultConfig: IConfig = {
   domains: []
 };
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 export async function readJSON(): Promise<IConfig> {
   try {
-    const file = path.resolve(__dirname, './creator.config.js');
+    const file = path.resolve('./creator.config.js');
     logger.info(`Reading file ${file}`);
     const GJSONExists = fileExists(file);
 
@@ -28,7 +23,7 @@ export async function readJSON(): Promise<IConfig> {
       return defaultConfig;
     }
 
-    const json = (await dynamicImport(file)).default;
+    const json = (await import(file)).default;
 
     if (!json) {
       return defaultConfig;
