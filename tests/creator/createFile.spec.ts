@@ -8,7 +8,7 @@ describe('Test createFile() function', () => {
   const BASE_DIR = './tests/files';
 
   it('should create file with content', () => {
-    const filePath = `${BASE_DIR}/crate/create.txt`;
+    const filePath = `${BASE_DIR}/create/create.txt`;
     const content = '1';
 
     createFile(filePath, content, () => {
