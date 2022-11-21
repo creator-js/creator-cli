@@ -1,5 +1,36 @@
 {
+  "testMatch": [
+    "<rootDir>/**/?(*.)+(spec|test).[jt]s?(x)"
+  ],
   "transform": {
-    "^.+\\.(ts|tsx)?$": "ts-jest"
-  }
+    "^.+\\.(ts|tsx|js|jsx)?$": "ts-jest"
+  },
+  "clearMocks": true,
+  "testTimeout": 60000,
+  "collectCoverageFrom": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "coverageDirectory": "coverage",
+  "coverageReporters": [
+    "text",
+    "html",
+    "json-summary"
+  ],
+  "coveragePathIgnorePatterns": [
+    "<rootDir>/packages/*/src/react-app-env.d.ts",
+    "<rootDir>/packages/*/src/reportWebVitals.ts"
+  ],
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "jsx",
+    "ts",
+    "tsx"
+  ],
+  "reporters": [
+    "default"
+  ],
+  "testEnvironment": "node",
+  "testPathIgnorePatterns": []
 }
