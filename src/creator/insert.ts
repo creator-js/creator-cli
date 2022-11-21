@@ -26,11 +26,7 @@ export const insert = (data: string, updates: ITemplateUpdate[]): string => {
 
     if (fromIndex === -1 || toIndex === -1) {
       if (u.fallback) {
-        updates.push({
-          ...u,
-          ...u.fallback,
-          fallback: u.fallback.fallback || undefined
-        });
+        updates.push(u.fallback);
       }
 
       continue;
