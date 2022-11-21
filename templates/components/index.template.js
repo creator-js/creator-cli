@@ -8,7 +8,7 @@ export default ({ ComponentName, $createPath }) => {
     init: `/* istanbul ignore file */
 import { ${ComponentName} } from './${ComponentName}';
 
-${exportString}
+${exportString} 
 `
   };
 };

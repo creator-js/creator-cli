@@ -4,9 +4,6 @@ export default {
   },
   'domains': [
     {
-      'name': 'test'
-    },
-    {
       'name': 'component',
       'structure': {
         'applications': {
@@ -24,19 +21,19 @@ export default {
       },
       'templates': [
         {
-          'name': ({ ComponentName }) => `${ComponentName}/${ComponentName}.tsx`,
+          'name': ({ componentName }) => `${componentName}/${componentName}.tsx`,
           'template': '../templates/components/component.template.js'
         },
         {
-          'name': ({ ComponentName }) => `${ComponentName}/${ComponentName}.less`,
+          'name': ({ componentName }) => `${componentName}/${componentName}.less`,
           'template': '../templates/components/style.template.js'
         },
         {
-          'name': ({ ComponentName }) => `${ComponentName}/${ComponentName}.test.tsx`,
+          'name': ({ componentName }) => `${componentName}/${componentName}.test.tsx`,
           'template': '../templates/components/tests.template.js'
         },
         {
-          'name': ({ ComponentName }) => `${ComponentName}/index.ts`,
+          'name': ({ componentName }) => `${componentName}/index.ts`,
           'template': '../templates/components/index.template.js'
         },
         {
@@ -47,35 +44,38 @@ export default {
       ],
       'questions': [
         {
-          'name': 'ComponentName',
+          'name': 'componentName',
           'message': 'How to name the component?',
           'type': 'input'
         },
         {
-          'name': 'ComponentDetails',
+          'name': 'componentDetails',
           'message': 'What to add to the component?',
           'type': 'checkbox',
           'choices': [
             {
-              'name': 'Children'
+              'name': 'props'
+            },
+            {
+              'name': 'children'
             },
             {
               'name': 'useDispatch'
             },
             {
-              'name': 'useSelector'
+              'name': 'useLocation'
             },
             {
-              'name': 'useLocation'
+              'name': 'useParams'
             },
             {
               'name': 'useNavigate'
             },
             {
-              'name': 'Outlet'
+              'name': 'useForm'
             },
             {
-              'name': 'useForm'
+              'name': 'Outlet'
             }
           ]
         },

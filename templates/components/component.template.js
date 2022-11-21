@@ -1,7 +1,8 @@
-export default ({ ComponentName, ComponentDetails }) => {
+export default ({ componentName, componentDetails }) => {
 
-  let storeImport = '';
+  const itemsFromRouterDom = [];
   let routerDomImport = '';
+  let dispatchImport = '';
   let useHistory = '';
   let useLocation = '';
   let useParams = '';
@@ -9,37 +10,45 @@ export default ({ ComponentName, ComponentDetails }) => {
   let formImport = '';
   let formTemplate = '';
   let childrenImport = false;
+  let hasProps = false;
 
-  ComponentDetails.forEach((o) => {
+  const separator = '// -------------------------------------------------------------------------------------------------------------------';
+
+  componentDetails.forEach((o) => {
+    if (o === 'props') {
+      hasProps = true;
+    }
+
     if (o === 'useDispatch') {
-      storeImport = 'import { useDispatch } from \'react-redux\';';
+      dispatchImport = 'import { useDispatch } from \'react-redux\';';
     }
 
     if (o === 'useLocation') {
-      useLocation = '  const location = useLocation();\n';
-      routerDomImport = 'useLocation';
+      useLocation = 'const location = useLocation();';
+      itemsFromRouterDom.push('useLocation');
     }
 
     if (o === 'useNavigate') {
-      useHistory = '  const navigate = useNavigate();\n';
-      routerDomImport += routerDomImport === '' ? 'useNavigate' : ', useNavigate';
+      useHistory = 'const navigate = useNavigate();';
+      itemsFromRouterDom.push('useNavigate');
     }
 
     if (o === 'useParams') {
-      useParams = '  const params = useParams<{}>();\n';
-      routerDomImport += routerDomImport === '' ? 'useParams' : ', useParams';
+      useParams = 'const params = useParams<{}>();';
+      itemsFromRouterDom.push('useParams');
     }
 
     if (o === 'Outlet') {
       outlet = '<Outlet/>';
-      routerDomImport += routerDomImport === '' ? 'Outlet' : ', Outlet';
+      itemsFromRouterDom.push('Outlet');
     }
 
-    if (o === 'Children') {
+    if (o === 'children') {
       childrenImport = true;
+      hasProps = true;
     }
 
-    if (o === 'useFormHook') {
+    if (o === 'useForm') {
       formImport = 'import { FormProvider, useForm } from \'react-hook-form\';';
       formTemplate = `const form = useForm({
     defaultValues: {},
@@ -56,43 +65,62 @@ export default ({ ComponentName, ComponentDetails }) => {
     })();
   };
     
-  // -------------------------------------------------------------------------------------------------------------------
+  ${separator}
   `;
     }
   });
 
-  if (routerDomImport) {
-    routerDomImport = `import { ${routerDomImport} } from 'react-router-dom';\n`;
+  if (itemsFromRouterDom.length > 0) {
+    routerDomImport = `import { ${itemsFromRouterDom.join(',')} } from 'react-router-dom';`;
   }
 
+  const reactImport = `import React${childrenImport ? ', { ReactNode } ' : ''} from 'react';`;
+  const styleImport = `import('./${componentName}.less')`;
+
+  const useDispatch = dispatchImport ? 'const dispatch = useDispatch();' : '';
+
+  const propsString = hasProps || childrenImport ? `{ ${childrenImport ? 'children' : ''} }: IProps` : '';
+
+  const formLayout = formImport ? `<FormProvider { ...form }>
+    <></>
+</FormProvider>` : '';
+
+  const hooks = [
+    useDispatch,
+    useLocation,
+    useHistory,
+    useParams
+  ].filter((item) => item !== '').join('\n');
+
+  const imports = [
+    reactImport,
+    styleImport,
+    dispatchImport,
+    routerDomImport,
+    formImport
+  ].filter((item) => item !== '').join('\n');
+
+  const layouts = [formLayout, outlet].filter((item) => item !== '').join('\n');
 
   return {
-    init: `import React${childrenImport ? ', { ReactNode } ' : ''} from 'react';
-import './${ComponentName}.less'; 
-${storeImport}
-${routerDomImport}
-${formImport}
+    init: `${imports}
 
-interface IProps {
-    ${childrenImport ? 'children: ReactNode | ReactNode[];' : ''}
-}
+${hasProps ? 'interface IProps {' : ''}
+${childrenImport ? 'children: ReactNode | ReactNode[];' : ''}
+${hasProps ? '}' : ''}
 
-export const ${ComponentName}: React.FC<IProps> = ({${childrenImport ? 'children' : ''}}: IProps) => {
-  ${storeImport ? 'const dispatch = useDispatch();\n' : ''}${useLocation}${useHistory}${useParams}
+export const ${componentName}: React.FC${hasProps ? '<IProps>' : ''} = (${propsString}) => {
+  ${hooks}
 
-
-  // -------------------------------------------------------------------------------------------------------------------
+  ${separator}
      
   ${formTemplate}
 
   return (
-    <div className='${ComponentName.toLowerCase()}-component'>
-      ${formImport ? `<FormProvider { ...form }>
-
-      </FormProvider>` : ''}${outlet}
-    </>
+    <div className='${componentName.toLowerCase()}-component'>
+      ${layouts}
+    </div>
   );
-};
-  `
+};`
   };
 };

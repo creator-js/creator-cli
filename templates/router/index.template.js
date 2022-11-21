@@ -1,10 +1,10 @@
-export default ({ ComponentName, routePath }) => {
+export default ({ componentName, routePath }) => {
 
-  const routeImport = `const ${ComponentName} = lazy(() => import('../pages/${ComponentName}'));`;
+  const routeImport = `const ${componentName} = lazy(() => import('../pages/${componentName}'));`;
 
   const routeDeclaration = `{
         path: '${routePath}',
-        element: <${ComponentName} />,
+        element: <${componentName} />,
     },`;
 
   return {
