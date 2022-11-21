@@ -1,7 +1,7 @@
 {
-  "name": "react-generator-cmd",
-  "version": "5.0.54",
-  "description": "Generate redux or components",
+  "name": "creatorjs",
+  "version": "1.0.0",
+  "description": "Generate whatever you want",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
