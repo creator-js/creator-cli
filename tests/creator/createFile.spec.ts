@@ -13,7 +13,7 @@ describe('Test createFile() function', () => {
 
     createFile(filePath, content, () => {
       expect(mk.fileExists(filePath)).toBeTruthy();
-      fs.rmSync(`${BASE_DIR}/crate`, {
+      fs.rmSync(`${BASE_DIR}/create`, {
         recursive: true
       });
       expect(mk.fileExists(filePath)).toBeFalsy();
