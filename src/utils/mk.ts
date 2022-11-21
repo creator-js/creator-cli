@@ -46,21 +46,16 @@ export const mkFile = (filePath: string, data: string, onCreate?: AnyFunction) =
   }
 };
 
-export const fileExists = (filePath: string) => {
+export const fileExists = (filePath: string): boolean => {
   try {
     const normalizedPath = normalizePath(filePath);
     return fs.existsSync(normalizedPath);
   } catch (e) {
     logger.info(e);
     logger.error('Error in fileExists() function');
+    return false;
   }
 };
-
-export const readDirSync = (path: string) => {
-  return fs.readdirSync(path);
-};
-
-export const readFileSync = fs.readFileSync;
 
 export const normalizePath = (filePath: string): string => {
   return filePath.replace(/\\/g, '/');

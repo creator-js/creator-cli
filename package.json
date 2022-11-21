@@ -65,6 +65,7 @@
     "eslint": "8.28.0"
   },
   "dependencies": {
+    "memfs": "^3.4.12",
     "rxjs": "^7.5.5"
   },
   "release-it": {

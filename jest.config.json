@@ -17,7 +17,13 @@
     "html",
     "json-summary"
   ],
-  "coveragePathIgnorePatterns": [],
+  "coveragePathIgnorePatterns": [
+    "<rootDir>/src/types/common.types.ts",
+    "<rootDir>/src/types/config.types.ts",
+    "<rootDir>/src/types/types.ts",
+    "<rootDir>/src/utils/logger.ts",
+    "<rootDir>/src/utils/runLinter.ts"
+  ],
   "moduleFileExtensions": [
     "js",
     "json",
