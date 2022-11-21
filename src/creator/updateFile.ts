@@ -11,7 +11,6 @@ export const updateFile = (path: string, updates: ITemplateUpdate[], onComplete?
   fs.readFile(path, {
     encoding: 'utf8'
   }, (err, data) => {
-    console.log(4);
 
     if (err) {
       logger.info(err);
@@ -19,10 +18,7 @@ export const updateFile = (path: string, updates: ITemplateUpdate[], onComplete?
       return;
     }
 
-    console.log(3);
-
     const content = insert(data, updates).trim();
-    console.log(content);
 
     fs.writeFile(path, content, (err) => {
       if (err) {
