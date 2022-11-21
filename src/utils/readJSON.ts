@@ -1,7 +1,10 @@
+import * as path from 'path';
 
 import { dynamicImport } from './dynamicImport';
 import { logger } from './logger';
-import { fileExists } from './mk';
+import {
+  fileExists, normalizePath
+} from './mk';
 
 import { IConfig } from '../types/config.types';
 
@@ -14,7 +17,7 @@ const defaultConfig: IConfig = {
 
 export async function readJSON(): Promise<IConfig> {
   try {
-    const file = '../../../creator.config.js';
+    const file = normalizePath(path.resolve('./creator.config.js'));
     logger.info(`Reading file ${file}`);
     const GJSONExists = fileExists(file);
 
