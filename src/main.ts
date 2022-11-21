@@ -1,8 +1,12 @@
 import * as inquirer from 'inquirer';
+
 import {
   concat,
   Subject
 } from 'rxjs';
+
+import * as fs from 'fs';
+
 
 import creator from './creator';
 import {
@@ -16,10 +20,7 @@ import {
   Question
 } from './types/types';
 import { logger } from './utils/logger';
-import {
-  fileExists,
-  readDirSync
-} from './utils/mk';
+import { fileExists } from './utils/mk';
 import { readJSON } from './utils/readJSON';
 import { validateJSON } from './utils/validateJSON';
 
@@ -177,7 +178,7 @@ export const main = async () => {
                 let dir: string[] = [];
 
                 if (fileExists(answers.$createPath)) {
-                  dir = readDirSync(answers.$createPath);
+                  dir = fs.readdirSync(answers.$createPath);
                 }
 
                 return [Answer.CreateNew, ...dir];
@@ -250,7 +251,7 @@ export const main = async () => {
               let dir: string[] = [];
 
               if (fileExists(answers.$createPath)) {
-                dir = readDirSync(answers.$createPath);
+                dir = fs.readdirSync(answers.$createPath);
               }
 
               return [Answer.CreateNew, ...dir];

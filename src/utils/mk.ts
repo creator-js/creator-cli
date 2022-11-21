@@ -56,12 +56,6 @@ export const fileExists = (filePath: string) => {
   }
 };
 
-export const readDirSync = (path: string) => {
-  return fs.readdirSync(path);
-};
-
-export const readFileSync = fs.readFileSync;
-
 export const normalizePath = (filePath: string): string => {
   return filePath.replace(/\\/g, '/');
 };
