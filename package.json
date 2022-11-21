@@ -1,6 +1,6 @@
 {
   "name": "creator-js-cli",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Generate whatever you want",
   "main": "dist/index.js",
   "type": "module",
