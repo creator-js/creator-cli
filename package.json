@@ -1,6 +1,6 @@
 {
-  "name": "creatorjs",
-  "version": "1.0.0",
+  "name": "creator-js",
+  "version": "1.0.1",
   "description": "Generate whatever you want",
   "main": "dist/index.js",
   "type": "module",
