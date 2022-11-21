@@ -1,4 +1,3 @@
-import * as path from 'path';
 
 import { dynamicImport } from './dynamicImport';
 import { logger } from './logger';
@@ -15,7 +14,7 @@ const defaultConfig: IConfig = {
 
 export async function readJSON(): Promise<IConfig> {
   try {
-    const file = path.resolve('./creator.config.js');
+    const file = '../../../creator.config.js';
     logger.info(`Reading file ${file}`);
     const GJSONExists = fileExists(file);
 
