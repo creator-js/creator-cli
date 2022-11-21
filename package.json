@@ -1,5 +1,5 @@
 {
-  "name": "creator-js",
+  "name": "creator-js-cli",
   "version": "1.0.1",
   "description": "Generate whatever you want",
   "main": "dist/index.js",
