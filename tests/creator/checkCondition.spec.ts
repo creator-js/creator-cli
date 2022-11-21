@@ -1,5 +1,5 @@
-import { TemplateUpdateOperator } from '../../types/config.types';
-import { checkCondition } from '../checkCondition';
+import { checkCondition } from '../../src/creator/checkCondition';
+import { TemplateUpdateOperator } from '../../src/types/config.types';
 
 type T = [TemplateUpdateOperator, string] | boolean | undefined;
 
