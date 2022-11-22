@@ -83,7 +83,7 @@ async function main() {
 
   function onComplete() {
     console.log('Complete');
-    console.log(answers);
+    // console.log(answers);
   }
 
   function onError(e: any) {

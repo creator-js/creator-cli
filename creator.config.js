@@ -6,15 +6,7 @@ export default {
     {
       'name': 'service',
       'structure': {
-        ':app': {
-          'serviceFolder1': '',
-          'serviceFolder2': {
-            ':id': {
-              ':id': ''
-            }
-          },
-        },
-        'services2': ''
+        'services': '',
       },
       'questions': [
         {

@@ -11,9 +11,9 @@ export function getUserPrompts(userPrompts: Subject<any>, answers: IAnswers, q: 
 
   domain.answers[q.name] = q.answer;
 
-  // if (isTerminateConditions(answers, q)) {
-  //   onComplete();
-  // }
+  if (isTerminateConditions(answers, q)) {
+    onComplete();
+  }
 
   if (domain.raw.questions && domain.raw.questions.length > 0) {
     domain.raw.questions.forEach((question: IConfigComponentQuestion) => {
@@ -34,20 +34,8 @@ function isTerminateConditions(answers: IAnswers, q: QuestionAnswer): boolean {
 
     const lastQuestion = questions[questions.length - 1];
 
-    // next question is invisible and is last question
     const currentQuestionIndex = questions.findIndex((qu: IConfigComponentQuestion) => qu.name === q.name);
     const nextQuestion = questions[currentQuestionIndex + 1];
-
-    const isNextQuestionLast = lastQuestion.name === nextQuestion?.name;
-    let isNextQuestionVisible = true;
-
-    if (nextQuestion?.when !== undefined) {
-      if (typeof nextQuestion.when === 'boolean') {
-        isNextQuestionVisible = nextQuestion.when;
-      } else {
-        isNextQuestionVisible = nextQuestion.when(answers);
-      }
-    }
 
     const nextQuestions: boolean[] = [];
     let noMoreVisibleQuestions = false;
@@ -62,9 +50,13 @@ function isTerminateConditions(answers: IAnswers, q: QuestionAnswer): boolean {
       }
     }
 
-    noMoreVisibleQuestions = nextQuestions.every((isVisible: boolean) => !isVisible);
+    if (nextQuestions.length > 0) {
+      noMoreVisibleQuestions = nextQuestions.every((isVisible: boolean) => !isVisible);
+    }
 
-    return q.name === lastQuestion.name || (isNextQuestionLast && !isNextQuestionVisible) || noMoreVisibleQuestions;
+    const isLastQuestion = q.name === lastQuestion.name;
+
+    return isLastQuestion || noMoreVisibleQuestions;
   } catch (e) {
     logger.info(e);
     logger.error('Could not terminate');

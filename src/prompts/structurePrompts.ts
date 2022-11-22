@@ -20,31 +20,21 @@ export function getStructurePrompts(structurePrompts: Subject<any>, answers: IAn
     if (q.answer === Answer.CreateNew) {
       domain.currentKey = domain.dynamicKey;
 
-      // logger.dev('[1.1] currentKey', domain.currentKey);
       if (domain.currentKey) {
         domain.structure = domain.structure[domain.currentKey];
       }
-      // logger.dev('[1.2] structure', domain.structure);
     } else {
       domain.currentKey = domain.dynamicKey || q.answer;
-      // logger.dev('[2.1] currentKey', domain.currentKey);
 
       if (!domain.dynamicKey && domain.currentKey) {
         domain.structure = domain.structure[domain.currentKey];
       }
 
-      // logger.dev('[2.2] structure', domain.structure);
       domain.createPath += `/${q.answer}`;
-      // logger.dev('[2.3] createPath', domain.createPath);
     }
   } else {
     domain.currentKey = undefined;
   }
-
-  // logger.dev('currentKey', `${oldDomain.currentKey} --> ${domain.currentKey}`);
-  // logger.dev('createPath', `${oldDomain.createPath} --> ${domain.createPath}`);
-  // logger.dev('dynamicKey', `${oldDomain.dynamicKey} --> ${domain.dynamicKey}`);
-  // logger.dev('structure', `${JSON.stringify(oldDomain.structure)} --> ${JSON.stringify(domain.structure)}`);
 
   if (q.answer === Answer.CreateNew) {
     structurePrompts.next({
