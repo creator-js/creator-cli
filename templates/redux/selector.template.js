@@ -1,4 +1,4 @@
-import { capitalize } from 'react-generator-cmd';
+import { capitalize } from 'creator-js-cli';
 
 export default ({ fieldName, reducerName, sliceName, successType }) => {
 

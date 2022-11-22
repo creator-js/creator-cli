@@ -5,11 +5,21 @@ export interface IConfig {
   domains: IConfigDomain[];
 }
 
+export interface IDomain {
+  raw: IConfigDomain;
+  filePath: string;
+  structure: any;
+  dynamicKey: string | undefined;
+  currentKey: string | undefined;
+  answers: Record<string, any>;
+}
+
 export interface IConfigDomain {
   name: string;
   structure: any;
   templates: IConfigComponentTemplates[];
   questions: IConfigComponentQuestion[];
+  next?: IConfigNext;
 }
 
 export interface IConfigComponentTemplates {
@@ -23,6 +33,11 @@ export interface IConfigComponentQuestion {
   message: string;
   type: string;
   validate?: (input: any) => boolean;
+  when?: boolean | ((answers: IAnswersBase) => boolean);
+}
+
+export interface IConfigNext {
+  name: string;
   when?: boolean | ((answers: IAnswersBase) => boolean);
 }
 

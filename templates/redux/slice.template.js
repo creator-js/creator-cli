@@ -1,6 +1,6 @@
 import {
   capitalize, getTypeValue
-} from 'react-generator-cmd';
+} from 'creator-js-cli';
 
 export default ({ sliceName, fieldName, successType, actionsName }) => {
 

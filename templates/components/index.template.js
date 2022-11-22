@@ -1,6 +1,6 @@
-export default ({ ComponentName, $createPath }) => {
+export default ({ ComponentName, filePath }) => {
 
-  const isPage = $createPath.includes('pages');
+  const isPage = filePath.includes('pages');
 
   const exportString = isPage ? `export default ${ComponentName};` : `export { ${ComponentName} };`;
 

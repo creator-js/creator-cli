@@ -8,7 +8,7 @@ import { updateFile } from './updateFile';
 
 import {
   IConfig,
-  IConfigComponentTemplates,
+  IConfigComponentTemplates, IConfigDomain,
   ITemplateInvoker
 } from '../types/config.types';
 import { IAnswersBase } from '../types/types';
@@ -19,86 +19,101 @@ import { runLinter } from '../utils/runLinter';
 
 
 export default (answers: IAnswersBase, config: IConfig) => {
-  const templates = config.domains[answers.$domainIndex].templates;
 
-  if (!templates || templates.length === 0) {
-    logger.info('Could not find any templates');
-    return;
-  }
+  for (const domain in answers) {
+    if (domain === 'variables') {
+      continue;
+    }
 
-  templates.forEach(async (templateConfig: IConfigComponentTemplates) => {
-    try {
-      if (templateConfig.when && !templateConfig.when(answers)) {
-        return;
-      }
+    const domainIndex = config.domains.findIndex((d: IConfigDomain) => d.name === domain);
 
-      let name = '';
+    if (domainIndex < 0) {
+      logger.error(`Domain with name ${domain} is not in creator.config.js`);
+      continue;
+    }
 
-      if (typeof templateConfig.name === 'string') {
-        name = templateConfig.name;
-      } else {
-        name = templateConfig.name(answers);
-      }
+    const templates = config.domains[domainIndex].templates;
 
-      const componentsPathNext = name.includes(answers.$root) ? '' : answers.$createPath + '/';
+    if (!templates || templates.length === 0) {
+      logger.info('Could not find any templates');
+      return;
+    }
 
-      if (templateConfig.template) {
+    templates.forEach(async (templateConfig: IConfigComponentTemplates) => {
+      try {
+        if (templateConfig.when && !templateConfig.when(answers[domain])) {
+          return;
+        }
 
-        const filePath = path.join(componentsPathNext, name);
+        let name = '';
 
-        const template = typeof templateConfig.template === 'string' ? templateConfig.template : templateConfig.template(answers);
-        const invoker: ITemplateInvoker = (await dynamicImport(path.resolve(config.variables.root, template))).default;
-
-        if (fileExists(filePath)) {
-
-          fs.readFile(filePath, 'utf-8', (err, data) => {
-            if (err) {
-              logger.info(err);
-              logger.error('Error occurred while reading file', filePath);
-              return;
-            }
-
-            if (data && data.trim() === '') {
-              logger.info(`Re-init file ${filePath}`);
-              try {
-                const content = invoker(answers).init;
-                hydrateFile(filePath, content, () => {
-                  logger.success('Created file', filePath);
-                  runLinter(filePath);
-                });
-              } catch (e) {
-                logger.info(e);
-                logger.error('Error occurred in template', template);
-              }
-            } else {
-              const updates = invoker(answers).updates;
-
-              if (updates) {
-                logger.info(`Updating file ${filePath}`);
-                updateFile(filePath, updates, () => {
-                  logger.success('Updated file', filePath);
-                  runLinter(filePath);
-                });
-              }
-            }
-          });
+        if (typeof templateConfig.name === 'string') {
+          name = templateConfig.name;
         } else {
-          logger.info(`Creating file ${filePath}`);
+          name = templateConfig.name(answers[domain]);
+        }
 
-          try {
-            const content = invoker(answers).init;
-            createFile(filePath, content, () => {
-              logger.success('Created file', filePath);
-              runLinter(filePath);
+        const componentsPathNext = name.includes(answers.variables.root) ? '' : answers[domain].filePath + '/';
+
+        if (templateConfig.template) {
+
+          const filePath = path.join(componentsPathNext, name);
+
+          const template = typeof templateConfig.template === 'string' ? templateConfig.template : templateConfig.template(answers[domain]);
+          const invoker: ITemplateInvoker = (await dynamicImport(path.resolve(config.variables.root, template))).default;
+
+          if (fileExists(filePath)) {
+
+            fs.readFile(filePath, 'utf-8', (err, data) => {
+              if (err) {
+                logger.info(err);
+                logger.error('Error occurred while reading file', filePath);
+                return;
+              }
+
+              if (data && data.trim() === '') {
+                logger.info(`Re-init file ${filePath}`);
+                try {
+                  const content = invoker(answers[domain]).init;
+                  hydrateFile(filePath, content, () => {
+                    logger.success('Created file', filePath);
+                    runLinter(filePath);
+                  });
+                } catch (e) {
+                  logger.info(e);
+                  logger.error('Error occurred in template', template);
+                }
+              } else {
+                const updates = invoker(answers[domain]).updates;
+
+                if (updates) {
+                  logger.info(`Updating file ${filePath}`);
+                  updateFile(filePath, updates, () => {
+                    logger.success('Updated file', filePath);
+                    runLinter(filePath);
+                  });
+                }
+              }
             });
-          } catch (e) {
-            logger.info(e);
-            logger.error('Error occurred in template', template);
+          } else {
+            logger.info(`Creating file ${filePath}`);
+
+            try {
+              const content = invoker(answers[domain]).init;
+              createFile(filePath, content, () => {
+                logger.success('Created file', filePath);
+                runLinter(filePath);
+              });
+            } catch (e) {
+              logger.info(e);
+              logger.error('Error occurred in template', template);
+            }
           }
         }
+      } catch (e) {
+        logger.error(e);
       }
-    } catch (e) {
-      logger.error(e);
-    }
-  });
+    });
+
+  }
 };
