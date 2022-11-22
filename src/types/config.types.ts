@@ -7,10 +7,8 @@ export interface IConfig {
 
 export interface IDomain {
   raw: IConfigDomain;
-  createPath: string;
+  filePath: string;
   structure: any;
-  depth: number;
-  isPrevQuestionDynamic: boolean;
   dynamicKey: string | undefined;
   currentKey: string | undefined;
   answers: Record<string, any>;

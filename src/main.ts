@@ -1,278 +1,118 @@
-import * as inquirer from 'inquirer';
-
+import inquirer, {
+  Answers, QuestionAnswer
+} from 'inquirer';
 import {
-  concat,
-  Subject
+  merge, Subject
 } from 'rxjs';
 
-import * as fs from 'fs';
-
-
 import creator from './creator';
+import { getInitialPrompts } from './prompts/initialPrompts';
+import { getStructurePrompts } from './prompts/structurePrompts';
 import {
-  IConfig,
-  IConfigComponentQuestion,
-  IConfigDomain
+  getUserPrompts, initUserPrompts
+} from './prompts/userPrompts';
+import {
+  IConfig, IConfigDomain
 } from './types/config.types';
 import {
-  Answer,
-  IAnswersBase,
-  QuestionEnum
+  IAnswers, QuestionEnum
 } from './types/types';
 import { logger } from './utils/logger';
-import { fileExists } from './utils/mk';
+import { prepareAnswers } from './utils/prepareAnswers';
 import { readJSON } from './utils/readJSON';
 
-
-export const main = async () => {
+async function main() {
   const config: IConfig = await readJSON();
 
-  let structure: any = {};
-  let depth = 1;
-  let nextKey = undefined;
-  let dynamicKey: unknown = undefined;
-
-  const answers: IAnswersBase = {
+  const answers: IAnswers = {
     domains: {},
-    $domainIndex: -1,
-    $createPath: config.variables.root || ''
+    depth: 0,
+    prevAnswers: [],
+    currentDomain: undefined,
+    initialPromptsPaused: false,
+    structurePromptsPaused: true,
+    userPromptsPaused: true,
   };
 
-  if (config.variables) {
-    Object.keys(config.variables).forEach((key: string) => {
-      // @ts-ignore
-      answers[`$${key}`] = config.variables[key];
+  const $initialPrompts = new Subject<any>();
+  const $structurePrompts = new Subject<any>();
+  const $userPrompts = new Subject<any>();
+
+  const $stream = merge($initialPrompts, $structurePrompts, $userPrompts);
+
+  inquirer.prompt($stream).ui.process.subscribe(onEachAnswer, onError, onComplete);
+
+  getInitialPrompts($initialPrompts, answers, config);
+
+  function initDomainPrompts(domain: IConfigDomain | undefined, domainName: string, question: QuestionAnswer<Answers>) {
+    if (domain) {
+      if (answers.domains[domain.name] !== undefined) {
+        logger.error('Recursive domain reference');
+      } else {
+        answers.structurePromptsPaused = false;
+        answers.userPromptsPaused = true;
+
+        answers.domains = {
+          ...answers.domains,
+          [domain.name]: {
+            raw: domain,
+            filePath: config.variables.root || '',
+            structure: domain.structure || '',
+            dynamicKey: undefined,
+            currentKey: undefined,
+            answers: {}
+          }
+        };
+        answers.currentDomain = domain.name;
+
+        getStructurePrompts($structurePrompts, answers, question, () => {
+          initUserPrompts($userPrompts, answers);
+        });
+      }
+    } else {
+      logger.error('Could not find domain', domainName);
+    }
+  }
+
+  function switchToNextDomain(nextDomain: string) {
+    const domain = config.domains.find((d: IConfigDomain) => d.name === nextDomain);
+    initDomainPrompts(domain, nextDomain, {
+      name: QuestionEnum.Create + answers.depth,
+      answer: nextDomain
     });
   }
 
-  const initialChoices: { name: string }[] = config.domains.map((d: IConfigDomain) => {
-    return {
-      name: d.name
-    };
-  });
+  function onEachAnswer(question: QuestionAnswer) {
+    if (question.name === QuestionEnum.Create) {
+      answers.initialPromptsPaused = false;
+      answers[question.name] = question.answer;
+      const domain = config.domains.find((d: IConfigDomain) => d.name === question.answer);
+      initDomainPrompts(domain, question.answer, question);
+    } else {
+      getStructurePrompts($structurePrompts, answers, question, () => {
+        initUserPrompts($userPrompts, answers);
+      });
 
-  const prompts: Subject<any> = new Subject();
-  const userPrompts: Subject<any> = new Subject();
+      getUserPrompts($userPrompts, answers, config, question, terminate, switchToNextDomain);
+    }
+  }
 
-  // @ts-ignore
-  inquirer.prompt(concat(prompts, userPrompts)).ui.process.subscribe(
-    (q) => {
-      answers[q.name] = q.answer;
+  function onComplete() {
+    const result = prepareAnswers(answers, config);
+    logger.success('Answers', result);
+    creator(result, config);
+  }
 
-      // Terminate
+  function onError(e: any) {
+    console.log(e);
+    console.log('Error');
+  }
 
-      try {
-        if (answers.$domainIndex >= 0 && config.domains) {
-          const questions = config.domains[answers.$domainIndex].questions;
-
-          if (!questions || questions.length === 0) {
-            logger.info('No additional questions.');
-            userPrompts.complete();
-            return;
-          }
-
-          const lastQuestion = questions[questions.length - 1];
-
-          // next question is invisible and is last question
-          const currentQuestionIndex = questions.findIndex((qu: IConfigComponentQuestion) => qu.name === q.name);
-          const nextQuestion = questions[currentQuestionIndex + 1];
-
-          const isNextQuestionLast = lastQuestion.name === nextQuestion?.name;
-          let isNextQuestionVisible = true;
-
-          if (nextQuestion?.when !== undefined) {
-            if (typeof nextQuestion.when === 'boolean') {
-              isNextQuestionVisible = nextQuestion.when;
-            } else {
-              isNextQuestionVisible = nextQuestion.when(answers);
-            }
-          }
-
-          const nextQuestions: boolean[] = [];
-          let noMoreVisibleQuestions = false;
-
-          for (let i = currentQuestionIndex; i < questions.length; i++) {
-            if (nextQuestion?.when !== undefined) {
-              if (typeof nextQuestion.when === 'boolean') {
-                nextQuestions.push(nextQuestion.when);
-              } else {
-                nextQuestions.push(nextQuestion.when(answers));
-              }
-            }
-          }
-
-          noMoreVisibleQuestions = prompts.isStopped && nextQuestions.every((isVisible: boolean) => !isVisible);
-
-          if (q.name === lastQuestion.name || (isNextQuestionLast && !isNextQuestionVisible) || noMoreVisibleQuestions) {
-            userPrompts.complete();
-            return;
-          }
-        }
-      } catch (e) {
-        logger.info(e);
-        logger.error('Could not terminate');
-      }
-
-      // -----------------------------------------------------------------------------------------------------------------
-
-      if (prompts.isStopped) {
-        return;
-      }
-
-      if (q.name === QuestionEnum.Create) {
-        try {
-          const domain = initialChoices.find(({ name }) => name === q.answer);
-          answers.$domainIndex = config.domains.findIndex((d: IConfigDomain) => d.name === domain?.name);
-
-          if (answers.$domainIndex >= 0) {
-            const str = config.domains[answers.$domainIndex].structure;
-            structure = !str || Object.keys(str).length === 0 ? '' : str;
-          } else {
-            prompts.complete();
-            userPrompts.complete();
-            return;
-          }
-        } catch (e) {
-          logger.info(e);
-          logger.error('Could not define the domain');
-        }
-
-        try {
-          if (typeof structure === 'string') {
-            prompts.complete();
-
-            const questions = config.domains[answers.$domainIndex].questions;
-
-            if (!questions || questions.length === 0) {
-              logger.info('No additional questions.');
-              userPrompts.complete();
-              return;
-            }
-
-            questions.forEach((q: IConfigComponentQuestion) => {
-              userPrompts.next(q);
-            });
-            return;
-          }
-        } catch (e) {
-          logger.info(e);
-          logger.error('Could not complete prompts [1]');
-        }
-
-        try {
-          const keys = structure ? Object.keys(structure) : [];
-          dynamicKey = keys.find((k) => k[0] === ':') || undefined;
-
-          prompts.next({
-            type: 'list',
-            name: `components_${depth}`,
-            message: 'Where to create a file?',
-            choices: () => {
-              if (dynamicKey) {
-                let dir: string[] = [];
-
-                if (fileExists(answers.$createPath)) {
-                  dir = fs.readdirSync(answers.$createPath);
-                }
-
-                return [Answer.CreateNew, ...dir];
-              }
-
-              return Object.keys(structure);
-            }
-          });
-        } catch (e) {
-          logger.info(e);
-          logger.error('Could not determine where to create a file.');
-        }
-
-        return;
-      }
-
-      depth++;
-
-      if (q.answer === Answer.CreateNew) {
-        prompts.next({
-          type: 'input',
-          name: `components_${depth}`,
-          message: 'How to name folder?',
-          validate: (input: string) => input !== ''
-        });
-        return;
-      }
-
-      try {
-        nextKey = dynamicKey || q.answer;
-        answers.$createPath += `/${q.answer}`;
-        structure = structure[nextKey];
-
-        const keys = structure ? Object.keys(structure) : [];
-        dynamicKey = keys.find((k) => k[0] === ':') || undefined;
-      } catch (e) {
-        logger.info(e);
-        logger.error('Could not generate dynamic structure');
-      }
-
-      try {
-        if (typeof structure === 'string') {
-          prompts.complete();
-
-          const questions = config.domains[answers.$domainIndex].questions;
-
-          if (!questions || questions.length === 0) {
-            logger.info('No additional questions.');
-            userPrompts.complete();
-            return;
-          }
-
-          questions.forEach((q: IConfigComponentQuestion) => {
-            userPrompts.next(q);
-          });
-          return;
-        }
-      } catch (e) {
-        logger.info(e);
-        logger.error('Could not complete prompts [2]');
-      }
-
-      try {
-        prompts.next({
-          type: 'list',
-          name: `components_${depth}`,
-          message: 'Where to create a file?',
-          choices: () => {
-            if (dynamicKey) {
-              let dir: string[] = [];
-
-              if (fileExists(answers.$createPath)) {
-                dir = fs.readdirSync(answers.$createPath);
-              }
-
-              return [Answer.CreateNew, ...dir];
-            }
-
-            return Object.keys(structure);
-          }
-        });
-      } catch (e) {
-        logger.info(e);
-        logger.error('Could not generate dynamic structure');
-      }
-    },
-    (error) => {
-      console.log(error);
-    },
-    () => {
-      answers.$createPath = answers.$createPath.split('/').filter((s: string) => s !== '').join('/');
-      creator(answers, config);
-    });
-
-  prompts.next({
-    type: 'list',
-    name: QuestionEnum.Create,
-    message: 'What needs to be created?',
-    choices: initialChoices,
-  });
-};
+  function terminate() {
+    $initialPrompts.complete();
+    $structurePrompts.complete();
+    $userPrompts.complete();
+  }
+}
 
 main();

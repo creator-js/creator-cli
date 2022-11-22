@@ -8,7 +8,6 @@
     "test": "jest --coverage",
     "build": "rimraf dist && webpack --config webpack.config.js && cp cli.js dist && tsc",
     "g1": "node ./dist/main.js",
-    "g2": "node ./dist/main2.js",
     "g": "node_modules/.bin/g",
     "release": "release-it --no-git.requireCleanWorkingDir",
     "prepare": "husky install"

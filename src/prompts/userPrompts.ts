@@ -2,28 +2,61 @@ import { QuestionAnswer } from 'inquirer';
 import { Subject } from 'rxjs';
 
 import { AnyFunction } from '../types/common.types';
-import { IConfigComponentQuestion } from '../types/config.types';
-import { IAnswers } from '../types/types';
+import {
+  IConfig,
+  IConfigComponentQuestion, IConfigNext
+} from '../types/config.types';
+import {
+  IAnswers, IAnswersBase
+} from '../types/types';
 import { logger } from '../utils/logger';
+import { prepareAnswers } from '../utils/prepareAnswers';
 
-export function getUserPrompts(userPrompts: Subject<any>, answers: IAnswers, q: QuestionAnswer, onComplete: AnyFunction) {
-  const domain = answers.domains[answers.currentDomain];
+export function initUserPrompts($userPrompts: Subject<any>, answers: IAnswers) {
+  answers.structurePromptsPaused = true;
+  answers.userPromptsPaused = false;
 
-  domain.answers[q.name] = q.answer;
-
-  if (isTerminateConditions(answers, q)) {
-    onComplete();
+  if (!answers.currentDomain) {
+    logger.error('No domain provided');
+    return;
   }
+
+  const domain = answers.domains[answers.currentDomain];
 
   if (domain.raw.questions && domain.raw.questions.length > 0) {
     domain.raw.questions.forEach((question: IConfigComponentQuestion) => {
-      userPrompts.next(question);
+      $userPrompts.next(question);
     });
+  }
+}
+
+export function getUserPrompts($userPrompts: Subject<any>, answers: IAnswers, config: IConfig, q: QuestionAnswer, onComplete: AnyFunction, onNextDomain: (nextDomain: string) => void) {
+  if (!answers.currentDomain) {
+    logger.error('No domain provided');
+    return;
+  }
+
+  const domain = answers.domains[answers.currentDomain];
+  domain.answers[q.name] = q.answer;
+
+  if (isTerminateConditions(answers, q)) {
+    const domainAnswers = prepareAnswers(answers, config)[domain.raw.name];
+
+    if (checkNextDomain(domain.raw.next, domainAnswers)) {
+      onNextDomain((domain.raw.next as IConfigNext).name);
+    } else {
+      onComplete();
+    }
   }
 }
 
 function isTerminateConditions(answers: IAnswers, q: QuestionAnswer): boolean {
   try {
+    if (!answers.currentDomain) {
+      logger.error('No domain provided');
+      return true;
+    }
+
     const domain = answers.domains[answers.currentDomain];
     const questions = domain.raw.questions;
 
@@ -62,4 +95,20 @@ function isTerminateConditions(answers: IAnswers, q: QuestionAnswer): boolean {
     logger.error('Could not terminate');
     return false;
   }
+}
+
+function checkNextDomain(nextDomain: IConfigNext | undefined, answers: IAnswersBase): boolean {
+  if (nextDomain === undefined) {
+    return false;
+  }
+
+  if (nextDomain.when !== undefined) {
+    if (typeof nextDomain.when === 'boolean') {
+      return nextDomain.when;
+    }
+
+    return nextDomain.when(answers);
+  }
+
+  return true;
 }
