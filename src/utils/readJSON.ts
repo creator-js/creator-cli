@@ -4,6 +4,8 @@ import { dynamicImport } from './dynamicImport';
 import { logger } from './logger';
 import { fileExists } from './mk';
 
+import { validateJSON } from './validateJSON';
+
 import { IConfig } from '../types/config.types';
 
 const defaultConfig: IConfig = {
@@ -28,7 +30,7 @@ export async function readJSON(): Promise<IConfig> {
 
     logger.info(`Reading file ${file}`);
 
-    if (file === '' || fileExists(fileJS)) {
+    if (file === '' || !fileExists(file as string)) {
       logger.info('creator.config.js not found. Using default config.');
       return defaultConfig;
     }
@@ -36,6 +38,14 @@ export async function readJSON(): Promise<IConfig> {
     const json = (await dynamicImport(file as string)).default;
 
     if (!json) {
+      return defaultConfig;
+    }
+
+    const isValidConfig = validateJSON(json);
+
+    if (!isValidConfig) {
+      logger.error('Invalid config. Using default config.');
+      process.exit(0);
       return defaultConfig;
     }
 

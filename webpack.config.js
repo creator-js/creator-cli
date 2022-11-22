@@ -4,7 +4,8 @@ export default {
   mode: 'production',
   entry: {
     index: path.resolve('./src/index.ts'),
-    main: path.resolve('./src/main.ts')
+    main: path.resolve('./src/main.ts'),
+    main2: path.resolve('./src/main2.ts'),
   },
   target: 'node',
   resolve: {

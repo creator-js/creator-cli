@@ -4,6 +4,57 @@ export default {
   },
   'domains': [
     {
+      'name': 'service',
+      'structure': {
+        'services1': {
+          'serviceFolder1': '',
+          'serviceFolder2': {
+            ':id': {
+              ':id': ''
+            }
+          },
+        },
+        'services2': ''
+      },
+      'questions': [
+        {
+          'name': 'actionsName',
+          'message': 'How to name the service?',
+          'type': 'input',
+        }
+      ],
+      'templates': [
+        {
+          'name': ({ actionsName }) => `./${actionsName}.ts`,
+          'template': '../templates/redux/service.template.js'
+        }
+      ],
+      'next': {
+        'name': 'types'
+      }
+    },
+    {
+      'name': 'types',
+      'structure': {
+        'services': {
+          ':serviceFolder': ''
+        }
+      },
+      'questions': [
+        {
+          'name': 'successType',
+          'message': 'How to name response type?',
+          'type': 'input',
+        }
+      ],
+      'templates': [
+        {
+          'name': ({ successType }) => `./${successType}.ts`,
+          'template': '../templates/redux/types.template.js'
+        }
+      ]
+    },
+    {
       'name': 'component',
       'structure': {
         'applications': {

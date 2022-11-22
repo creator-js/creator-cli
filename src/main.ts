@@ -17,22 +17,15 @@ import {
 import {
   Answer,
   IAnswersBase,
-  Question
+  QuestionEnum
 } from './types/types';
 import { logger } from './utils/logger';
 import { fileExists } from './utils/mk';
 import { readJSON } from './utils/readJSON';
-import { validateJSON } from './utils/validateJSON';
 
 
 export const main = async () => {
   const config: IConfig = await readJSON();
-  const isValidConfig = validateJSON(config);
-
-  if (!isValidConfig) {
-    logger.error('Invalid config');
-    process.exit(0);
-  }
 
   let structure: any = {};
   let depth = 1;
@@ -40,6 +33,7 @@ export const main = async () => {
   let dynamicKey: unknown = undefined;
 
   const answers: IAnswersBase = {
+    domains: {},
     $domainIndex: -1,
     $createPath: config.variables.root || ''
   };
@@ -125,7 +119,7 @@ export const main = async () => {
         return;
       }
 
-      if (q.name === Question.Create) {
+      if (q.name === QuestionEnum.Create) {
         try {
           const domain = initialChoices.find(({ name }) => name === q.answer);
           answers.$domainIndex = config.domains.findIndex((d: IConfigDomain) => d.name === domain?.name);
@@ -275,7 +269,7 @@ export const main = async () => {
 
   prompts.next({
     type: 'list',
-    name: Question.Create,
+    name: QuestionEnum.Create,
     message: 'What needs to be created?',
     choices: initialChoices,
   });
