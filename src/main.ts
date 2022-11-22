@@ -27,7 +27,6 @@ async function main() {
   const answers: IAnswers = {
     domains: {},
     depth: 0,
-    prevAnswers: [],
     currentDomain: undefined,
     initialPromptsPaused: false,
     structurePromptsPaused: true,
@@ -45,13 +44,13 @@ async function main() {
   getInitialPrompts($initialPrompts, answers, config);
 
   function initDomainPrompts(domain: IConfigDomain | undefined, domainName: string, question: QuestionAnswer<Answers>) {
+    answers.structurePromptsPaused = false;
+    answers.userPromptsPaused = true;
+
     if (domain) {
       if (answers.domains[domain.name] !== undefined) {
         logger.error('Recursive domain reference');
       } else {
-        answers.structurePromptsPaused = false;
-        answers.userPromptsPaused = true;
-
         answers.domains = {
           ...answers.domains,
           [domain.name]: {
@@ -84,7 +83,7 @@ async function main() {
 
   function onEachAnswer(question: QuestionAnswer) {
     if (question.name === QuestionEnum.Create) {
-      answers.initialPromptsPaused = false;
+      answers.initialPromptsPaused = true;
       answers[question.name] = question.answer;
       const domain = config.domains.find((d: IConfigDomain) => d.name === question.answer);
       initDomainPrompts(domain, question.answer, question);
@@ -99,7 +98,6 @@ async function main() {
 
   function onComplete() {
     const result = prepareAnswers(answers, config);
-    logger.success('Answers', result);
     creator(result, config);
   }
 

@@ -5,7 +5,6 @@ export type IAnswersBase = Record<string, any>;
 export interface IAnswersCore {
   domains: Record<string, IDomain>;
   depth: number;
-  prevAnswers: string[];
   currentDomain: string | undefined;
   initialPromptsPaused: boolean;
   structurePromptsPaused: boolean;

@@ -19,7 +19,6 @@ export function getStructurePrompts($structurePrompts: Subject<any>, answers: IA
 
   const domain = answers.domains[answers.currentDomain];
 
-  answers.prevAnswers[answers.depth] = domain.dynamicKey || q.answer;
   answers.depth++;
 
   if (q.answer === Answer.CreateNew) {

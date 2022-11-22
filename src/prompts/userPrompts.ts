@@ -31,6 +31,10 @@ export function initUserPrompts($userPrompts: Subject<any>, answers: IAnswers) {
 }
 
 export function getUserPrompts($userPrompts: Subject<any>, answers: IAnswers, config: IConfig, q: QuestionAnswer, onComplete: AnyFunction, onNextDomain: (nextDomain: string) => void) {
+  if (answers.userPromptsPaused) {
+    return;
+  }
+
   if (!answers.currentDomain) {
     logger.error('No domain provided');
     return;
