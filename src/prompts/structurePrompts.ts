@@ -18,26 +18,35 @@ export function getStructurePrompts(structurePrompts: Subject<any>, answers: IAn
 
   if (q.name.indexOf('_file_') === 0) {
     if (q.answer === Answer.CreateNew) {
-      domain.nextKey = domain.dynamicKey;
-      domain.dynamicKey = undefined;
+      domain.currentKey = domain.dynamicKey;
+
+      // logger.dev('[1.1] currentKey', domain.currentKey);
+      if (domain.currentKey) {
+        domain.structure = domain.structure[domain.currentKey];
+      }
+      // logger.dev('[1.2] structure', domain.structure);
     } else {
-      domain.nextKey = q.answer;
+      domain.currentKey = domain.dynamicKey || q.answer;
+      // logger.dev('[2.1] currentKey', domain.currentKey);
+
+      if (!domain.dynamicKey && domain.currentKey) {
+        domain.structure = domain.structure[domain.currentKey];
+      }
+
+      // logger.dev('[2.2] structure', domain.structure);
+      domain.createPath += `/${q.answer}`;
+      // logger.dev('[2.3] createPath', domain.createPath);
     }
-
-    domain.createPath += `/${q.answer}`;
   } else {
-    domain.nextKey = undefined;
+    domain.currentKey = undefined;
   }
 
-  // logger.dev('domain.nextKey', domain.nextKey);
-  // logger.dev(`domain.structure[${domain.nextKey}]`, domain.structure[domain.nextKey]);
-
-  if (domain.nextKey && typeof domain.structure !== 'string') {
-    domain.structure = domain.structure[domain.nextKey];
-  }
+  // logger.dev('currentKey', `${oldDomain.currentKey} --> ${domain.currentKey}`);
+  // logger.dev('createPath', `${oldDomain.createPath} --> ${domain.createPath}`);
+  // logger.dev('dynamicKey', `${oldDomain.dynamicKey} --> ${domain.dynamicKey}`);
+  // logger.dev('structure', `${JSON.stringify(oldDomain.structure)} --> ${JSON.stringify(domain.structure)}`);
 
   if (q.answer === Answer.CreateNew) {
-    domain.dynamicKey = undefined;
     structurePrompts.next({
       type: 'input',
       name: `_file_${domain.depth}`,

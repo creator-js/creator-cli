@@ -53,7 +53,7 @@ async function main() {
             structure: domain.structure || '',
             depth: 0,
             dynamicKey: undefined,
-            nextKey: undefined,
+            currentKey: undefined,
             isPrevQuestionDynamic: false,
             answers: {}
           }

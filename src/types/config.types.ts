@@ -12,7 +12,7 @@ export interface IDomain {
   depth: number;
   isPrevQuestionDynamic: boolean;
   dynamicKey: string | undefined;
-  nextKey: string | undefined;
+  currentKey: string | undefined;
   answers: Record<string, any>;
 }
 

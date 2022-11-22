@@ -6,7 +6,7 @@ export default {
     {
       'name': 'service',
       'structure': {
-        'services1': {
+        ':app': {
           'serviceFolder1': '',
           'serviceFolder2': {
             ':id': {
