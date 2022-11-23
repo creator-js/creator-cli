@@ -97,11 +97,11 @@ async function main() {
       const domain = config.domains.find((d: IConfigDomain) => d.name === question.answer);
       initDomainPrompts(domain, question.answer, question);
     } else {
+      getUserPrompts($userPrompts, answers, config, question, terminate, switchToNextDomain);
+
       getStructurePrompts($structurePrompts, answers, question, () => {
         initUserPrompts($userPrompts, answers, terminate);
       });
-
-      getUserPrompts($userPrompts, answers, config, question, terminate, switchToNextDomain);
     }
   }
 
