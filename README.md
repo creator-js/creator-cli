@@ -269,6 +269,7 @@ All fields of update object:
 | when       | [Operator, string] or boolean | false    | AA condition on which the substitution is performed. The condition will be checked against every line within the boundaries.                         |
 | fallback   |     update object             | false    | When the update could not be performed, the `fallback` update will be performed if provided.                                                         |
 
+* Operator = `'includes' | 'not includes' | '===' | '!=='`
 ## <a name="structure"></a>Structure
 
 Structure comes in handy when there is a defined folder structure in the project.
