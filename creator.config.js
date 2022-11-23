@@ -15,25 +15,27 @@ export default {
               },
               popups: ''
             },
-            pages: '',
+            pages: {
+              $page: ''
+            },
           }
         }
       },
       templates: [
         {
-          name: ({ componentName }) => `${componentName}/${componentName}.tsx`,
+          name: ({ componentName }) => `./${componentName}.tsx`,
           template: '../templates/components/component.template.js'
         },
         {
-          name: ({ componentName }) => `${componentName}/${componentName}.less`,
+          name: ({ componentName }) => `./${componentName}.less`,
           template: '../templates/components/style.template.js'
         },
         {
-          name: ({ componentName }) => `${componentName}/${componentName}.test.tsx`,
+          name: ({ componentName }) => `./${componentName}.test.tsx`,
           template: '../templates/components/tests.template.js'
         },
         {
-          name: ({ componentName }) => `${componentName}/index.ts`,
+          name: ({ componentName }) => './index.ts',
           template: '../templates/components/index.template.js'
         },
         {
@@ -96,7 +98,7 @@ export default {
       ],
       next: {
         name: 'redux',
-        when: ({ withReducer }) => !!withReducer,
+        when: (answers) => answers.filePath.split('/').some(s => s === 'pages'),
         skipStructure: true
       }
     },

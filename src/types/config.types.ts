@@ -5,15 +5,6 @@ export interface IConfig {
   domains: IConfigDomain[];
 }
 
-export interface IDomain {
-  raw: IConfigDomain;
-  filePath: string;
-  structure: any;
-  dynamicKey: string | undefined;
-  currentKey: string | undefined;
-  answers: Record<string, any>;
-}
-
 export interface IConfigDomain {
   name: string;
   structure: any;
@@ -23,9 +14,9 @@ export interface IConfigDomain {
 }
 
 export interface IConfigComponentTemplates {
-  name: string | ((answers: IAnswersBase) => string);
-  template: string | ((answers: IAnswersBase) => string);
-  when?: (answers: IAnswersBase) => boolean;
+  name: string | ((answers: IAnswersBase, allAnswers?: IAnswersBase) => string);
+  template: string | ((answers: IAnswersBase, allAnswers?: IAnswersBase) => string);
+  when?: (answers: IAnswersBase, allAnswers?: IAnswersBase) => boolean;
 }
 
 export interface IConfigComponentQuestion {
@@ -48,7 +39,7 @@ export interface IConfigVariablesRequired {
 
 export type IConfigVariables = IConfigVariablesRequired & Record<string, string>;
 
-export type ITemplateInvoker = (answers: IAnswersBase) => ITemplate;
+export type ITemplateInvoker = (answers: IAnswersBase, allAnswers?: IAnswersBase) => ITemplate;
 
 export interface ITemplate {
   init: string;
@@ -63,6 +54,15 @@ export interface ITemplateUpdate {
   changeWith: string;
   when?: [TemplateUpdateOperator, string] | boolean;
   fallback?: ITemplateUpdate;
+}
+
+export interface IDomain {
+  raw: IConfigDomain;
+  filePath: string;
+  structure: any;
+  dynamicKey: string | undefined;
+  currentKey: string | undefined;
+  answers: Record<string, any>;
 }
 
 export enum TemplateUpdateOperator {

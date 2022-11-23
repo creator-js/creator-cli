@@ -16,7 +16,6 @@ import {
   IAnswers, QuestionEnum
 } from './types/types';
 import { logger } from './utils/logger';
-import { prepareAnswers } from './utils/prepareAnswers';
 import { readJSON } from './utils/readJSON';
 
 async function main() {
@@ -108,9 +107,7 @@ async function main() {
   }
 
   function onComplete() {
-    const result = prepareAnswers(answers, config);
-    logger.success('answers', result);
-    creator(result, config);
+    creator(answers, config);
   }
 
   function onError(e: any) {

@@ -43,10 +43,10 @@ export function getUserPrompts($userPrompts: Subject<any>, answers: IAnswers, co
   const domain = answers.domains[answers.currentDomain];
   domain.answers[q.name] = q.answer;
 
-  const shouldTerminate = isTerminateConditions(answers, q);
+  const domainAnswers = prepareAnswers(answers, config)[domain.raw.name];
+  const shouldTerminate = isTerminateConditions(answers, q, domainAnswers);
 
   if (shouldTerminate) {
-    const domainAnswers = prepareAnswers(answers, config)[domain.raw.name];
     const shouldGoToNextDomain = isNextDomain(domain.raw.next, domainAnswers);
 
     if (shouldGoToNextDomain) {
@@ -57,7 +57,7 @@ export function getUserPrompts($userPrompts: Subject<any>, answers: IAnswers, co
   }
 }
 
-function isTerminateConditions(answers: IAnswers, q: QuestionAnswer): boolean {
+function isTerminateConditions(answers: IAnswers, q: QuestionAnswer, domainAnswers: IAnswers): boolean {
   try {
     if (!answers.currentDomain) {
       logger.error('No domain provided');
@@ -66,6 +66,7 @@ function isTerminateConditions(answers: IAnswers, q: QuestionAnswer): boolean {
 
     const domain = answers.domains[answers.currentDomain];
     const questions = domain.raw.questions;
+
 
     if (!questions || questions.length === 0) {
       logger.info('No additional questions.');
@@ -85,7 +86,7 @@ function isTerminateConditions(answers: IAnswers, q: QuestionAnswer): boolean {
         if (typeof nextQuestion.when === 'boolean') {
           nextQuestions.push(nextQuestion.when);
         } else {
-          nextQuestions.push(nextQuestion.when(domain.answers));
+          nextQuestions.push(nextQuestion.when(domainAnswers));
         }
       }
     }
@@ -104,7 +105,7 @@ function isTerminateConditions(answers: IAnswers, q: QuestionAnswer): boolean {
   }
 }
 
-function isNextDomain(nextDomain: IConfigNext | undefined, answers: IAnswersBase): boolean {
+function isNextDomain(nextDomain: IConfigNext | undefined, domainAnswers: IAnswersBase): boolean {
   if (nextDomain === undefined) {
     return false;
   }
@@ -114,7 +115,7 @@ function isNextDomain(nextDomain: IConfigNext | undefined, answers: IAnswersBase
       return nextDomain.when;
     }
 
-    return nextDomain.when(answers);
+    return nextDomain.when(domainAnswers);
   }
 
   return true;

@@ -11,16 +11,21 @@ import {
   IConfigComponentTemplates, IConfigDomain,
   ITemplateInvoker
 } from '../types/config.types';
-import { IAnswersBase } from '../types/types';
+import { IAnswers } from '../types/types';
 import { dynamicImport } from '../utils/dynamicImport';
 import { logger } from '../utils/logger';
 import { fileExists } from '../utils/mk';
+import { prepareAnswers } from '../utils/prepareAnswers';
 import { runLinter } from '../utils/runLinter';
 
 
-export default (answers: IAnswersBase, config: IConfig) => {
+export default (systemAnswers: IAnswers, config: IConfig) => {
 
-  for (const domain in answers) {
+  const allAnswers = prepareAnswers(systemAnswers, config);
+  logger.success('[ANSWERS]');
+  console.log(allAnswers);
+
+  for (const domain in allAnswers) {
     if (domain === 'variables') {
       continue;
     }
@@ -32,6 +37,7 @@ export default (answers: IAnswersBase, config: IConfig) => {
       continue;
     }
 
+    const answers = allAnswers[domain];
     const templates = config.domains[domainIndex].templates;
 
     if (!templates || templates.length === 0) {
@@ -41,7 +47,7 @@ export default (answers: IAnswersBase, config: IConfig) => {
 
     templates.forEach(async (templateConfig: IConfigComponentTemplates) => {
       try {
-        if (templateConfig.when && !templateConfig.when(answers[domain])) {
+        if (templateConfig.when && !templateConfig.when(answers, allAnswers)) {
           return;
         }
 
@@ -50,16 +56,16 @@ export default (answers: IAnswersBase, config: IConfig) => {
         if (typeof templateConfig.name === 'string') {
           name = templateConfig.name;
         } else {
-          name = templateConfig.name(answers[domain]);
+          name = templateConfig.name(answers, allAnswers);
         }
 
-        const componentsPathNext = name.includes(answers.variables.root) ? '' : answers[domain].filePath + '/';
+        const componentsPathNext = name.includes(allAnswers.variables.root) ? '' : answers.filePath + '/';
 
         if (templateConfig.template) {
 
           const filePath = path.join(componentsPathNext, name);
 
-          const template = typeof templateConfig.template === 'string' ? templateConfig.template : templateConfig.template(answers[domain]);
+          const template = typeof templateConfig.template === 'string' ? templateConfig.template : templateConfig.template(answers, allAnswers);
           const invoker: ITemplateInvoker = (await dynamicImport(path.resolve(config.variables.root, template))).default;
 
           if (fileExists(filePath)) {
@@ -74,7 +80,7 @@ export default (answers: IAnswersBase, config: IConfig) => {
               if (data && data.trim() === '') {
                 logger.info(`Re-init file ${filePath}`);
                 try {
-                  const content = invoker(answers[domain]).init;
+                  const content = invoker(answers, allAnswers).init;
                   hydrateFile(filePath, content, () => {
                     logger.success('Created file', filePath);
                     runLinter(filePath);
@@ -84,7 +90,7 @@ export default (answers: IAnswersBase, config: IConfig) => {
                   logger.error('Error occurred in template', template);
                 }
               } else {
-                const updates = invoker(answers[domain]).updates;
+                const updates = invoker(answers, allAnswers).updates;
 
                 if (updates) {
                   logger.info(`Updating file ${filePath}`);
@@ -99,7 +105,7 @@ export default (answers: IAnswersBase, config: IConfig) => {
             logger.info(`Creating file ${filePath}`);
 
             try {
-              const content = invoker(answers[domain]).init;
+              const content = invoker(answers, allAnswers).init;
               createFile(filePath, content, () => {
                 logger.success('Created file', filePath);
                 runLinter(filePath);
