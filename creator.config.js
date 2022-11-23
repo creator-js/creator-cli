@@ -1,6 +1,7 @@
 export default {
   variables: {
-    root: './output'
+    root: './output',
+    createEmpty: true
   },
   domains: [
     {
@@ -15,27 +16,25 @@ export default {
               },
               popups: ''
             },
-            pages: {
-              $page: ''
-            },
+            pages: '',
           }
         }
       },
       templates: [
         {
-          name: ({ componentName }) => `./${componentName}.tsx`,
+          name: ({ componentName }) => `./${componentName}/${componentName}.tsx`,
           template: '../templates/components/component.template.js'
         },
         {
-          name: ({ componentName }) => `./${componentName}.less`,
+          name: ({ componentName }) => `./${componentName}/${componentName}.less`,
           template: '../templates/components/style.template.js'
         },
         {
-          name: ({ componentName }) => `./${componentName}.test.tsx`,
+          name: ({ componentName }) => `./${componentName}/${componentName}.test.tsx`,
           template: '../templates/components/tests.template.js'
         },
         {
-          name: ({ componentName }) => './index.ts',
+          name: ({ componentName }) => `./${componentName}/index.ts`,
           template: '../templates/components/index.template.js'
         },
         {

@@ -1,6 +1,5 @@
-export default ({ componentName }) => {
+export default () => {
   return {
-    init: `.${componentName.toLowerCase()}-component {
-}`
+    init: ''
   };
 };

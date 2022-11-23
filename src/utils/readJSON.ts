@@ -10,7 +10,8 @@ import { IConfig } from '../types/config.types';
 
 const defaultConfig: IConfig = {
   variables: {
-    root: './'
+    root: './',
+    createEmpty: true
   },
   domains: []
 };
@@ -51,7 +52,11 @@ export async function readJSON(): Promise<IConfig> {
 
     const result: IConfig = {
       ...defaultConfig,
-      ...json
+      ...json,
+      variables: {
+        ...defaultConfig.variables,
+        ...json.variables
+      }
     };
 
     return result;

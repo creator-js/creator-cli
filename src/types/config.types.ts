@@ -8,15 +8,16 @@ export interface IConfig {
 export interface IConfigDomain {
   name: string;
   structure: any;
-  templates: IConfigComponentTemplates[];
+  templates: IConfigTemplate[];
   questions: IConfigComponentQuestion[];
   next?: IConfigNext;
 }
 
-export interface IConfigComponentTemplates {
+export interface IConfigTemplate {
   name: string | ((answers: IAnswersBase, allAnswers?: IAnswersBase) => string);
   template: string | ((answers: IAnswersBase, allAnswers?: IAnswersBase) => string);
   when?: (answers: IAnswersBase, allAnswers?: IAnswersBase) => boolean;
+  createEmpty?: boolean;
 }
 
 export interface IConfigComponentQuestion {
@@ -35,9 +36,10 @@ export interface IConfigNext {
 
 export interface IConfigVariablesRequired {
   root: string;
+  createEmpty?: boolean
 }
 
-export type IConfigVariables = IConfigVariablesRequired & Record<string, string>;
+export type IConfigVariables = IConfigVariablesRequired & Record<string, any>;
 
 export type ITemplateInvoker = (answers: IAnswersBase, allAnswers?: IAnswersBase) => ITemplate;
 

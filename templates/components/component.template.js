@@ -117,7 +117,7 @@ export const ${componentName}: React.FC${hasProps ? '<IProps>' : ''} = (${propsS
   ${formTemplate}
 
   return (
-    <div className='${componentName.toLowerCase()}-component'>
+    <div>
       ${layouts}
     </div>
   );

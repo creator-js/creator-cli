@@ -8,7 +8,7 @@ import { updateFile } from './updateFile';
 
 import {
   IConfig,
-  IConfigComponentTemplates, IConfigDomain,
+  IConfigTemplate, IConfigDomain,
   ITemplateInvoker
 } from '../types/config.types';
 import { IAnswers } from '../types/types';
@@ -45,7 +45,7 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
       return;
     }
 
-    templates.forEach(async (templateConfig: IConfigComponentTemplates) => {
+    templates.forEach(async (templateConfig: IConfigTemplate) => {
       try {
         if (templateConfig.when && !templateConfig.when(answers, allAnswers)) {
           return;
@@ -106,7 +106,7 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
 
             try {
               const content = invoker(answers, allAnswers).init;
-              createFile(filePath, content, () => {
+              createFile(filePath, content, allAnswers, templateConfig, () => {
                 logger.success('Created file', filePath);
                 runLinter(filePath);
               });

@@ -30,7 +30,7 @@ export default {
     chunkFormat: 'module',
   },
   optimization: {
-    minimize: false
+    minimize: true
   },
   experiments: {
     outputModule: true
