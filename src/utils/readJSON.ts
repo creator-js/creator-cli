@@ -45,7 +45,6 @@ export async function readJSON(): Promise<IConfig> {
     const isValidConfig = validateJSON(json);
 
     if (!isValidConfig) {
-      logger.error('Invalid config. Using default config.');
       process.exit(0);
       return defaultConfig;
     }
