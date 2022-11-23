@@ -51,18 +51,6 @@ export const validateJSON = (config: IConfig): boolean => {
           return false;
         }
       }
-
-      if (template.template === undefined) {
-        logger.error('Field "template" must be provided for the template.');
-        return false;
-      }
-
-      if (typeof template.template === 'string') {
-        if (template.template === '') {
-          logger.error('Field "template" of the template must not be an empty string.');
-          return false;
-        }
-      }
     }
   }
 

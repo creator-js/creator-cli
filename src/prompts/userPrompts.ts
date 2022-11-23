@@ -12,7 +12,7 @@ import {
 import { logger } from '../utils/logger';
 import { prepareAnswers } from '../utils/prepareAnswers';
 
-export function initUserPrompts($userPrompts: Subject<any>, answers: IAnswers) {
+export function initUserPrompts($userPrompts: Subject<any>, answers: IAnswers, onTerminate: AnyFunction) {
   answers.structurePromptsPaused = true;
   answers.userPromptsPaused = false;
 
@@ -27,6 +27,9 @@ export function initUserPrompts($userPrompts: Subject<any>, answers: IAnswers) {
     domain.raw.questions.forEach((question: IConfigComponentQuestion) => {
       $userPrompts.next(question);
     });
+  } else {
+    logger.info('No additional questions.');
+    onTerminate();
   }
 }
 
@@ -66,7 +69,6 @@ function isTerminateConditions(answers: IAnswers, q: QuestionAnswer, domainAnswe
 
     const domain = answers.domains[answers.currentDomain];
     const questions = domain.raw.questions;
-
 
     if (!questions || questions.length === 0) {
       logger.info('No additional questions.');

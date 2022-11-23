@@ -60,11 +60,9 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
         }
 
         const componentsPathNext = name.includes(allAnswers.variables.root) ? '' : answers.filePath + '/';
+        const filePath = path.join(componentsPathNext, name);
 
         if (templateConfig.template) {
-
-          const filePath = path.join(componentsPathNext, name);
-
           const template = typeof templateConfig.template === 'string' ? templateConfig.template : templateConfig.template(answers, allAnswers);
           const invoker: ITemplateInvoker = (await dynamicImport(path.resolve(config.variables.root, template))).default;
 
@@ -115,6 +113,11 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
               logger.error('Error occurred in template', template);
             }
           }
+        } else {
+          createFile(filePath, '', allAnswers, templateConfig, () => {
+            logger.success('Created file', filePath);
+            runLinter(filePath);
+          });
         }
       } catch (e) {
         logger.error(e);
