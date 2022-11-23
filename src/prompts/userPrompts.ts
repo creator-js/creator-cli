@@ -46,11 +46,11 @@ export function getUserPrompts($userPrompts: Subject<any>, answers: IAnswers, co
   const domain = answers.domains[answers.currentDomain];
   domain.answers[q.name] = q.answer;
 
-  const domainAnswers = prepareAnswers(answers, config)[domain.raw.name];
-  const shouldTerminate = isTerminateConditions(answers, q, domainAnswers);
+  const allAnswers = prepareAnswers(answers, config);
+  const shouldTerminate = isTerminateConditions(answers, q, allAnswers);
 
   if (shouldTerminate) {
-    const shouldGoToNextDomain = isNextDomain(domain.raw.next, domainAnswers);
+    const shouldGoToNextDomain = isNextDomain(domain.raw.next, allAnswers);
 
     if (shouldGoToNextDomain) {
       onNextDomain((domain.raw.next as IConfigNext).name);
@@ -60,7 +60,7 @@ export function getUserPrompts($userPrompts: Subject<any>, answers: IAnswers, co
   }
 }
 
-function isTerminateConditions(answers: IAnswers, q: QuestionAnswer, domainAnswers: IAnswers): boolean {
+function isTerminateConditions(answers: IAnswers, q: QuestionAnswer, allAnswers: IAnswersBase): boolean {
   try {
     if (!answers.currentDomain) {
       logger.error('No domain provided');
@@ -88,7 +88,7 @@ function isTerminateConditions(answers: IAnswers, q: QuestionAnswer, domainAnswe
         if (typeof nextQuestion.when === 'boolean') {
           nextQuestions.push(nextQuestion.when);
         } else {
-          nextQuestions.push(nextQuestion.when(domainAnswers));
+          nextQuestions.push(nextQuestion.when(allAnswers));
         }
       }
     }
@@ -107,7 +107,7 @@ function isTerminateConditions(answers: IAnswers, q: QuestionAnswer, domainAnswe
   }
 }
 
-function isNextDomain(nextDomain: IConfigNext | undefined, domainAnswers: IAnswersBase): boolean {
+function isNextDomain(nextDomain: IConfigNext | undefined, allAnswers: IAnswersBase): boolean {
   if (nextDomain === undefined) {
     return false;
   }
@@ -117,7 +117,7 @@ function isNextDomain(nextDomain: IConfigNext | undefined, domainAnswers: IAnswe
       return nextDomain.when;
     }
 
-    return nextDomain.when(domainAnswers);
+    return nextDomain.when(allAnswers);
   }
 
   return true;

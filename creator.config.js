@@ -1,18 +1,18 @@
 export default {
   variables: {
     root: './output',
-    createEmpty: true
+    createEmpty: true,
   },
   domains: [
     {
-      name: 'component',
+      name: 'components',
       structure: {
         applications: {
-          $appId: {
+          $app: {
             components: {
               shared: '',
               features: {
-                $id: ''
+                $feature: ''
               },
               popups: ''
             },
@@ -22,25 +22,25 @@ export default {
       },
       templates: [
         {
-          name: ({ componentName }) => `./${componentName}/${componentName}.tsx`,
-          template: '../templates/components/component.template.js'
+          name: ({ components: { componentName } }) => `${componentName}/${componentName}.tsx`,
+          template: '../_templates/components/component.template.js'
         },
         {
-          name: ({ componentName }) => `./${componentName}/${componentName}.less`,
-          template: '../templates/components/style.template.js'
+          name: ({ components: { componentName } }) => `${componentName}/${componentName}.less`,
+          template: '../_templates/components/styles.template.js'
         },
         {
-          name: ({ componentName }) => `./${componentName}/${componentName}.test.tsx`,
-          template: '../templates/components/tests.template.js'
+          name: ({ components: { componentName } }) => `${componentName}/${componentName}.test.tsx`,
+          template: '../_templates/components/tests.template.js'
         },
         {
-          name: ({ componentName }) => `./${componentName}/index.ts`,
-          template: '../templates/components/index.template.js'
+          name: ({ components: { componentName } }) => `${componentName}/index.ts`,
+          template: '../_templates/components/index.template.js'
         },
         {
           name: '../router/index.tsx',
-          template: '../templates/router/index.template.js',
-          when: (answers) => Object.values(answers).some((s) => s === 'pages')
+          template: '../_templates/router/index.template.js',
+          when: ({ components: { filePath } }) => filePath.includes('pages')
         }
       ],
       questions: [
@@ -85,27 +85,15 @@ export default {
           message: 'What route?',
           type: 'input',
           validate: (input) => input !== '',
-          when: (answers) => Object.values(answers).some((s) => s === 'pages')
-        },
-        {
-          name: 'withReducer',
-          message: 'Associate this page with reducer?',
-          type: 'confirm',
-          default: false,
-          when: (answers) => Object.values(answers).some((s) => s === 'pages')
+          when: (answers) => Object.values(answers).some((v) => v === 'pages')
         }
-      ],
-      next: {
-        name: 'redux',
-        when: (answers) => answers.filePath.split('/').some(s => s === 'pages'),
-        skipStructure: true
-      }
+      ]
     },
     {
       name: 'redux',
       structure: {
         applications: {
-          $appId: {
+          $app: {
             pages: {
               $page: ''
             }
@@ -114,30 +102,30 @@ export default {
       },
       templates: [
         {
-          name: ({ sliceName }) => `./redux/${sliceName}/slice.ts`,
-          template: '../templates/redux/slice.template.js'
+          name: ({ redux: { sliceName } }) => `./redux/${sliceName}/slice.ts`,
+          template: '../_templates/redux/slice.template.js'
         },
         {
-          name: ({ sliceName }) => `./redux/${sliceName}/selectors.ts`,
-          template: '../templates/redux/selector.template.js'
+          name: ({ redux: { sliceName } }) => `./redux/${sliceName}/selectors.ts`,
+          template: '../_templates/redux/selector.template.js'
         },
         {
-          name: ({ sliceName }) => `./redux/${sliceName}/thunks.ts`,
-          template: '../templates/redux/thunk.template.js',
-          when: (answers) => answers.async === true
+          name: ({ redux: { sliceName } }) => `./redux/${sliceName}/thunks.ts`,
+          template: '../_templates/redux/thunk.template.js',
+          when: ({ redux: { async } }) => async
         },
         {
-          name: ({ sliceName }) => `/redux/${sliceName}/types.ts`,
-          template: '../templates/redux/types.template.js'
-        },
-        {
-          name: ({ sliceName }) => `./redux/${sliceName}/services.ts`,
-          template: '../templates/redux/service.template.js',
-          when: (answers) => answers.async === true
+          name: ({ redux: { sliceName } }) => `./redux/${sliceName}/services.ts`,
+          template: '../_templates/redux/service.template.js',
+          when: ({ redux: { async } }) => async
         },
         {
           name: () => './redux/reducer.ts',
-          template: '../templates/redux/reducer.template.js'
+          template: '../_templates/redux/reducer.template.js'
+        },
+        {
+          name: ({ redux: { sliceName } }) => `./redux/${sliceName}/types.ts`,
+          template: '../_templates/redux/types.template.js'
         }
       ],
       questions: [
@@ -152,14 +140,14 @@ export default {
           type: 'input'
         },
         {
-          name: 'async',
-          message: 'Is action async?',
-          type: 'confirm'
-        },
-        {
           name: 'fieldName',
           message: 'How to name field?',
           type: 'input'
+        },
+        {
+          name: 'async',
+          message: 'Is action async?',
+          type: 'confirm'
         },
         {
           name: 'actionsName',
@@ -170,14 +158,14 @@ export default {
           name: 'serviceNamespace',
           message: 'What service namespace?',
           type: 'input',
-          when: (answers) => answers.async === true
+          when: (answers) => answers.async
         },
         {
           name: 'pendingType',
           message: 'Payload type?',
           type: 'input',
           default: 'void',
-          when: (answers) => answers.async === true
+          when: (answers) => answers.async
         },
         {
           name: 'successType',

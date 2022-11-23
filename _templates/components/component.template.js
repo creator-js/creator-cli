@@ -1,4 +1,4 @@
-export default ({ componentName, componentDetails }) => {
+export default ({ components: { componentName, componentDetails } }) => {
 
   const itemsFromRouterDom = [];
   let routerDomImport = '';
@@ -34,7 +34,7 @@ export default ({ componentName, componentDetails }) => {
     }
 
     if (o === 'useParams') {
-      useParams = 'const params = useParams<{}>();';
+      useParams = 'const params = useParams();';
       itemsFromRouterDom.push('useParams');
     }
 

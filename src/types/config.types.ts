@@ -83,5 +83,4 @@ export type IIndexes = [number, number];
 
 export interface ISwitchDomain {
   oldDomain?: IDomain;
-  skipStructure?: boolean;
 }

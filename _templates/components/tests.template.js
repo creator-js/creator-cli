@@ -1,4 +1,4 @@
-export default ({ componentName, componentDetails }) => {
+export default ({ components: { componentName, componentDetails } }) => {
 
   const hasChildren = componentDetails.includes('children');
 
