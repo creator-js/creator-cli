@@ -39,6 +39,7 @@ export interface IConfigComponentQuestion {
 export interface IConfigNext {
   name: string;
   when?: boolean | ((answers: IAnswersBase) => boolean);
+  skipStructure?: boolean;
 }
 
 export interface IConfigVariablesRequired {
@@ -77,3 +78,8 @@ export enum TemplateUpdateDirection {
 }
 
 export type IIndexes = [number, number];
+
+export interface ISwitchDomain {
+  oldDomain?: IDomain;
+  skipStructure?: boolean;
+}

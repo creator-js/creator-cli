@@ -12,6 +12,10 @@ import { logger } from '../utils/logger';
 import { fileExists } from '../utils/mk';
 
 export function getStructurePrompts($structurePrompts: Subject<any>, answers: IAnswers, q: QuestionAnswer, onComplete: AnyFunction) {
+  if (answers.structurePromptsPaused) {
+    return;
+  }
+
   if (!answers.currentDomain) {
     logger.error('No domain provided');
     return;

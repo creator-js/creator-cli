@@ -8,6 +8,10 @@ import {
 } from '../types/types';
 
 export function getInitialPrompts($initialPrompts: Subject<any>, answers: IAnswers, config: IConfig) {
+  if (answers.initialPromptsPaused) {
+    return;
+  }
+
   const initialChoices: { name: string }[] = config.domains.map((d: IConfigDomain) => {
     return {
       name: d.name

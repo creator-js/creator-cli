@@ -1,6 +1,4 @@
-import inquirer, {
-  Answers, QuestionAnswer
-} from 'inquirer';
+import inquirer, { QuestionAnswer } from 'inquirer';
 import {
   merge, Subject
 } from 'rxjs';
@@ -12,7 +10,7 @@ import {
   getUserPrompts, initUserPrompts
 } from './prompts/userPrompts';
 import {
-  IConfig, IConfigDomain
+  IConfig, IConfigDomain, ISwitchDomain
 } from './types/config.types';
 import {
   IAnswers, QuestionEnum
@@ -43,7 +41,7 @@ async function main() {
 
   getInitialPrompts($initialPrompts, answers, config);
 
-  function initDomainPrompts(domain: IConfigDomain | undefined, domainName: string, question: QuestionAnswer<Answers>) {
+  function initDomainPrompts(domain: IConfigDomain | undefined, domainName: string, question: QuestionAnswer, switchConfig?: ISwitchDomain) {
     answers.structurePromptsPaused = false;
     answers.userPromptsPaused = true;
 
@@ -55,7 +53,7 @@ async function main() {
           ...answers.domains,
           [domain.name]: {
             raw: domain,
-            filePath: config.variables.root || '',
+            filePath: switchConfig?.oldDomain?.filePath || config.variables.root || '',
             structure: domain.structure || '',
             dynamicKey: undefined,
             currentKey: undefined,
@@ -64,9 +62,13 @@ async function main() {
         };
         answers.currentDomain = domain.name;
 
-        getStructurePrompts($structurePrompts, answers, question, () => {
+        if (switchConfig?.skipStructure) {
           initUserPrompts($userPrompts, answers);
-        });
+        } else {
+          getStructurePrompts($structurePrompts, answers, question, () => {
+            initUserPrompts($userPrompts, answers);
+          });
+        }
       }
     } else {
       logger.error('Could not find domain', domainName);
@@ -74,11 +76,20 @@ async function main() {
   }
 
   function switchToNextDomain(nextDomain: string) {
+    const oldDomain = answers.currentDomain ? answers.domains[answers.currentDomain] : undefined;
+    const skipStructure = oldDomain?.raw.next?.skipStructure || false;
+
+    const switchConfig: ISwitchDomain = {
+      oldDomain,
+      skipStructure
+    };
+
     const domain = config.domains.find((d: IConfigDomain) => d.name === nextDomain);
-    initDomainPrompts(domain, nextDomain, {
+    const question = {
       name: QuestionEnum.Create + answers.depth,
       answer: nextDomain
-    });
+    };
+    initDomainPrompts(domain, nextDomain, question, switchConfig);
   }
 
   function onEachAnswer(question: QuestionAnswer) {
@@ -98,6 +109,7 @@ async function main() {
 
   function onComplete() {
     const result = prepareAnswers(answers, config);
+    logger.success('answers', result);
     creator(result, config);
   }
 

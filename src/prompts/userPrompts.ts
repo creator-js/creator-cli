@@ -43,10 +43,13 @@ export function getUserPrompts($userPrompts: Subject<any>, answers: IAnswers, co
   const domain = answers.domains[answers.currentDomain];
   domain.answers[q.name] = q.answer;
 
-  if (isTerminateConditions(answers, q)) {
-    const domainAnswers = prepareAnswers(answers, config)[domain.raw.name];
+  const shouldTerminate = isTerminateConditions(answers, q);
 
-    if (checkNextDomain(domain.raw.next, domainAnswers)) {
+  if (shouldTerminate) {
+    const domainAnswers = prepareAnswers(answers, config)[domain.raw.name];
+    const shouldGoToNextDomain = isNextDomain(domain.raw.next, domainAnswers);
+
+    if (shouldGoToNextDomain) {
       onNextDomain((domain.raw.next as IConfigNext).name);
     } else {
       onComplete();
@@ -82,7 +85,7 @@ function isTerminateConditions(answers: IAnswers, q: QuestionAnswer): boolean {
         if (typeof nextQuestion.when === 'boolean') {
           nextQuestions.push(nextQuestion.when);
         } else {
-          nextQuestions.push(nextQuestion.when(answers));
+          nextQuestions.push(nextQuestion.when(domain.answers));
         }
       }
     }
@@ -101,7 +104,7 @@ function isTerminateConditions(answers: IAnswers, q: QuestionAnswer): boolean {
   }
 }
 
-function checkNextDomain(nextDomain: IConfigNext | undefined, answers: IAnswersBase): boolean {
+function isNextDomain(nextDomain: IConfigNext | undefined, answers: IAnswersBase): boolean {
   if (nextDomain === undefined) {
     return false;
   }

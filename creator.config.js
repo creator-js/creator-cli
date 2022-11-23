@@ -85,8 +85,20 @@ export default {
           type: 'input',
           validate: (input) => input !== '',
           when: (answers) => Object.values(answers).some((s) => s === 'pages')
+        },
+        {
+          name: 'withReducer',
+          message: 'Associate this page with reducer?',
+          type: 'confirm',
+          default: false,
+          when: (answers) => Object.values(answers).some((s) => s === 'pages')
         }
-      ]
+      ],
+      next: {
+        name: 'redux',
+        when: ({ withReducer }) => !!withReducer,
+        skipStructure: true
+      }
     },
     {
       name: 'redux',
