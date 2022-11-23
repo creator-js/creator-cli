@@ -7,9 +7,9 @@ export interface IConfig {
 
 export interface IConfigDomain {
   name: string;
-  structure: any;
   templates: IConfigTemplate[];
-  questions: IConfigComponentQuestion[];
+  structure?: any;
+  questions?: IConfigComponentQuestion[];
   next?: IConfigNext;
 }
 
@@ -49,9 +49,9 @@ export interface ITemplate {
 }
 
 export interface ITemplateUpdate {
+  direction?: TemplateUpdateDirection;
   fromLine?: [TemplateUpdateOperator, string],
   toLine?: [TemplateUpdateOperator, string],
-  direction?: TemplateUpdateDirection;
   searchFor: [TemplateUpdateOperator, string],
   changeWith: string;
   when?: [TemplateUpdateOperator, string] | boolean;

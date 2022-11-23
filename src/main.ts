@@ -53,7 +53,7 @@ async function main() {
           [domain.name]: {
             raw: domain,
             filePath: switchConfig?.oldDomain?.filePath || config.variables.root || '',
-            structure: domain.structure || '',
+            structure: domain.structure || undefined,
             dynamicKey: undefined,
             currentKey: undefined,
             answers: {}
@@ -61,11 +61,11 @@ async function main() {
         };
         answers.currentDomain = domain.name;
 
-        if (switchConfig?.skipStructure) {
-          initUserPrompts($userPrompts, answers);
+        if (switchConfig?.skipStructure || domain.structure === undefined) {
+          initUserPrompts($userPrompts, answers, terminate);
         } else {
           getStructurePrompts($structurePrompts, answers, question, () => {
-            initUserPrompts($userPrompts, answers);
+            initUserPrompts($userPrompts, answers, terminate);
           });
         }
       }
@@ -99,7 +99,7 @@ async function main() {
       initDomainPrompts(domain, question.answer, question);
     } else {
       getStructurePrompts($structurePrompts, answers, question, () => {
-        initUserPrompts($userPrompts, answers);
+        initUserPrompts($userPrompts, answers, terminate);
       });
 
       getUserPrompts($userPrompts, answers, config, question, terminate, switchToNextDomain);
