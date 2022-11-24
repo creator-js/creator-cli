@@ -19,7 +19,7 @@ CreatorJS is a tool for automating boilerplate code generation.
 
 ## <a name="installation"></a>Installation
 
-You can install CreatorJS using this npm:
+You can install CreatorJS using npm:
 
 ```shell
 npm install creator-js-cli --save-dev
@@ -159,7 +159,8 @@ After running the CLI and answering questions, the file will be created with a n
 The structure of answers above is valid everywhere except for `questions`. Inquirers' question is similar, but not the same.
 
 In questions, `answers` structure would represent answers for the particular domain. 
-It will not have `filePath` field, but will have system fields, like `_file_1` or `_new-folder_1`.
+For example, it will have system fields, like `_file_1` or `_new-folder_1`, which are used for dynamic structure.
+In the resulting `answers` these fields are changed with `filePath`.
 
 ## <a name="templates"></a>Templates
 
@@ -274,12 +275,12 @@ All fields of update object:
 
 | Name       |             Type              | Required | Description                                                                                                                                          |
 |------------|:-----------------------------:|----------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| direction  |        'up' or 'down'         | false    | Tells, which way to scan the file. Default is `down`.                                                                                                 |
+| direction  |        'up' or 'down'         | false    | Tells, which way to scan the file. Default is `down`.                                                                                                |
 | fromLine   |      [Operator, string]       | false    | When `direction` is `down` the default value is the first line of the file. When `direction` is `up` the default value is the last line of the file. |
 | toLine     |      [Operator, string]       | false    | When `direction` is `down` the default value is the last line of the file. When `direction` is `up` the default value is the first line of the file. |
 | searchFor  |      [Operator, string]       | true     | Searches for a line with a `string` within boundaries based on condition.                                                                            |
 | changeWith |            string             | true     | A string template that should change the `string` from `searchFor`.                                                                                  |
-| when       | [Operator, string] or boolean | false    | AA condition on which the substitution is performed. The condition will be checked against every line within the boundaries.                         |
+| when       | [Operator, string] or boolean | false    | A condition on which the substitution is performed. The condition will be checked against every line within the boundaries.                          |
 | fallback   |         update object         | false    | When the update could not be performed, the `fallback` update will be performed if provided.                                                         |
 
 * Operator = `'includes' | 'not includes' | '===' | '!=='`
@@ -385,7 +386,7 @@ Now when you get to the `features` folder, CreatorJS will ask you to create a ne
 
 ## <a name="questions-chaining"></a>Questions chaining
 
-Sometimes you will want to create files from one domain and proceed with another. 
+Sometimes you want to create files from one domain and proceed with another. 
 One of examples can be Redux, when you want to create a page and then associate it with the reducer.
 
 To chain domains, use `next` field:
