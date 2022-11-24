@@ -38,15 +38,11 @@ export async function readJSON(): Promise<IConfig> {
 
     const json = (await dynamicImport(file as string)).default;
 
-    logger.dev('json', json);
-
     if (!json) {
       return defaultConfig;
     }
 
     const isValidConfig = validateJSON(json);
-
-    logger.dev('isValidConfig', isValidConfig);
 
     if (!isValidConfig) {
       process.exit(0);
@@ -62,12 +58,11 @@ export async function readJSON(): Promise<IConfig> {
       }
     };
 
-    logger.dev('config', result);
-
     return result;
   } catch (e) {
     logger.info(e);
     logger.error('Error in readJSON() function. Using default config.');
+    process.exit(0);
     return defaultConfig;
   }
 }

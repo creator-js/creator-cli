@@ -19,7 +19,6 @@ import { logger } from './utils/logger';
 import { readJSON } from './utils/readJSON';
 
 async function main() {
-  logger.dev('main', main);
   const config: IConfig = await readJSON();
 
   const answers: IAnswers = {
@@ -122,4 +121,11 @@ async function main() {
   }
 }
 
-main();
+main()
+  .then(() => {
+    //
+  })
+  .catch((e) => {
+    logger.info(e);
+    logger.error('Error running main() function');
+  });
