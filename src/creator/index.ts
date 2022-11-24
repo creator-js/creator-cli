@@ -154,7 +154,7 @@ function applyChanges(changes: IFileChange[], templatesToProcessNumber: number) 
   }
 
   for (const change of changes) {
-    if (FileChangeAction.Create) {
+    if (change.type === FileChangeAction.Create) {
       if (!change.createEmpty && change.content === '') {
         logger.info('File was not created because createEmpty flag is set to false:', change.filePath);
         return;
