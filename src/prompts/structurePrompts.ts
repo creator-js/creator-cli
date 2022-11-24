@@ -6,7 +6,7 @@ import fs from 'fs';
 
 import { AnyFunction } from '../types/common.types';
 import {
-  Answer, IAnswers
+  Answer, IAnswers, QuestionEnum
 } from '../types/types';
 import { logger } from '../utils/logger';
 import { fileExists } from '../utils/mk';
@@ -44,8 +44,11 @@ export function getStructurePrompts($structurePrompts: Subject<any>, answers: IA
     domain.filePath += `/${q.answer}`;
     domain.structure = domain.structure[domain.dynamicKey || q.answer];
     domain.dynamicKey = undefined;
+  } else if (q.name.includes(QuestionEnum.Create)) {
+    // Do nothing
   } else {
-    domain.currentKey = undefined;
+    // Otherwise the question does not belong here
+    return;
   }
 
   if (typeof domain.structure === 'string') {

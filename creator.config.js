@@ -47,7 +47,8 @@ export default {
         {
           name: 'componentName',
           message: 'How to name the component?',
-          type: 'input'
+          type: 'input',
+          validate: (input) => input !== '',
         },
         {
           name: 'componentDetails',
