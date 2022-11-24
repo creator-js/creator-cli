@@ -19,6 +19,7 @@ import { logger } from './utils/logger';
 import { readJSON } from './utils/readJSON';
 
 async function main() {
+  logger.dev('main', main);
   const config: IConfig = await readJSON();
 
   const answers: IAnswers = {

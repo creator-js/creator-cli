@@ -44,6 +44,8 @@ export async function readJSON(): Promise<IConfig> {
 
     const isValidConfig = validateJSON(json);
 
+    logger.dev('isValidConfig', isValidConfig);
+
     if (!isValidConfig) {
       process.exit(0);
       return defaultConfig;
@@ -57,6 +59,8 @@ export async function readJSON(): Promise<IConfig> {
         ...json.variables
       }
     };
+
+    logger.dev('config', result);
 
     return result;
   } catch (e) {
