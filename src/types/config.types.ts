@@ -1,5 +1,6 @@
 import { IAnswersBase } from './types';
 
+
 export interface IConfig {
   variables: IConfigVariables;
   domains: IConfigDomain[];
@@ -78,9 +79,21 @@ export enum TemplateUpdateDirection {
   Up = 'up',
   Down = 'down'
 }
+export enum FileChangeAction {
+  Update = 'update',
+  Create = 'create'
+}
+
 
 export type IIndexes = [number, number];
 
 export interface ISwitchDomain {
   oldDomain?: IDomain;
+}
+
+export interface IFileChange {
+  filePath: string;
+  content: string;
+  type: FileChangeAction;
+  createEmpty: boolean;
 }

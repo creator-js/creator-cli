@@ -1,31 +1,34 @@
-
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { createFile } from './createFile';
-import { hydrateFile } from './hydrateFile';
-import { updateFile } from './updateFile';
+import { fixFile } from './fixFile';
+
+import { insert } from './insert';
 
 import {
+  FileChangeAction,
   IConfig,
-  IConfigTemplate, IConfigDomain,
+  IConfigDomain,
+  IConfigTemplate, IFileChange,
   ITemplateInvoker
 } from '../types/config.types';
 import { IAnswers } from '../types/types';
 import { dynamicImport } from '../utils/dynamicImport';
 import { logger } from '../utils/logger';
-import { fileExists } from '../utils/mk';
+import {
+  fileExists, mkFile
+} from '../utils/mk';
 import { prepareAnswers } from '../utils/prepareAnswers';
 import { runLinter } from '../utils/runLinter';
 
 
 export default (systemAnswers: IAnswers, config: IConfig) => {
 
-  const allAnswers = prepareAnswers(systemAnswers, config);
+  const answers = prepareAnswers(systemAnswers, config);
   logger.success('[ANSWERS]');
-  console.log(allAnswers);
+  console.log(answers);
 
-  for (const domain in allAnswers) {
+  for (const domain in answers) {
     if (domain === 'variables') {
       continue;
     }
@@ -37,7 +40,7 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
       continue;
     }
 
-    const answers = allAnswers[domain];
+    const domainAnswers = answers[domain];
     const templates = config.domains[domainIndex].templates;
 
     if (!templates || templates.length === 0) {
@@ -45,29 +48,35 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
       return;
     }
 
+    const changes: IFileChange[] = [];
+    let templatesToProcessNumber = 0;
+
     templates.forEach(async (templateConfig: IConfigTemplate) => {
       try {
-        if (templateConfig.when && !templateConfig.when(allAnswers)) {
+        if (templateConfig.when && !templateConfig.when(answers)) {
           return;
         }
+
+        templatesToProcessNumber++;
 
         let name = '';
 
         if (typeof templateConfig.name === 'string') {
           name = templateConfig.name;
         } else {
-          name = templateConfig.name(allAnswers);
+          name = templateConfig.name(answers);
         }
 
-        const componentsPathNext = name.includes(allAnswers.variables.root) ? '' : answers.filePath + '/';
+        const componentsPathNext = name.includes(answers.variables.root) ? '' : domainAnswers.filePath + '/';
         const filePath = path.join(componentsPathNext, name);
 
+        const createEmpty = templateConfig.createEmpty !== undefined ? templateConfig.createEmpty : answers.variables.createEmpty;
+
         if (templateConfig.template) {
-          const template = typeof templateConfig.template === 'string' ? templateConfig.template : templateConfig.template(allAnswers);
+          const template = typeof templateConfig.template === 'string' ? templateConfig.template : templateConfig.template(answers);
           const invoker: ITemplateInvoker = (await dynamicImport(path.resolve(config.variables.root, template))).default;
 
           if (fileExists(filePath)) {
-
             fs.readFile(filePath, 'utf-8', (err, data) => {
               if (err) {
                 logger.info(err);
@@ -76,53 +85,97 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
               }
 
               if (data && data.trim() === '') {
-                logger.info(`Re-init file ${filePath}`);
                 try {
-                  const content = invoker(allAnswers).init;
-                  hydrateFile(filePath, content, () => {
-                    logger.success('Created file', filePath);
-                    runLinter(filePath);
+                  const content = invoker(answers).init;
+                  const fixedLines = fixFile(content);
+                  const fixedContent = fixedLines.join('\n').trim();
+                  changes.push({
+                    filePath,
+                    content: fixedContent,
+                    type: FileChangeAction.Update,
+                    createEmpty
                   });
+                  applyChanges(changes, templatesToProcessNumber);
                 } catch (e) {
                   logger.info(e);
                   logger.error('Error occurred in template', template);
                 }
               } else {
-                const updates = invoker(allAnswers).updates;
+                const updates = invoker(answers).updates;
 
                 if (updates) {
-                  logger.info(`Updating file ${filePath}`);
-                  updateFile(filePath, updates, () => {
-                    logger.success('Updated file', filePath);
-                    runLinter(filePath);
+                  changes.push({
+                    filePath,
+                    content: insert(data, updates).trim(),
+                    type: FileChangeAction.Update,
+                    createEmpty
                   });
+                  applyChanges(changes, templatesToProcessNumber);
                 }
               }
             });
           } else {
-            logger.info(`Creating file ${filePath}`);
-
             try {
-              const content = invoker(allAnswers).init;
-              createFile(filePath, content, allAnswers, templateConfig, () => {
-                logger.success('Created file', filePath);
-                runLinter(filePath);
+              const content = invoker(answers).init;
+              const fixedLines = fixFile(content);
+              const fixedContent = fixedLines.join('\n').trim();
+
+              changes.push({
+                filePath,
+                content: fixedContent,
+                type: FileChangeAction.Create,
+                createEmpty
               });
+              applyChanges(changes, templatesToProcessNumber);
             } catch (e) {
               logger.info(e);
               logger.error('Error occurred in template', template);
             }
           }
         } else {
-          createFile(filePath, '', allAnswers, templateConfig, () => {
-            logger.success('Created file', filePath);
-            runLinter(filePath);
+          changes.push({
+            filePath,
+            content: '',
+            type: FileChangeAction.Create,
+            createEmpty
           });
+          applyChanges(changes, templatesToProcessNumber);
         }
       } catch (e) {
         logger.error(e);
       }
     });
-
   }
 };
+
+function applyChanges(changes: IFileChange[], templatesToProcessNumber: number) {
+  if (changes.length !== templatesToProcessNumber) {
+    return;
+  }
+
+  for (const change of changes) {
+    if (FileChangeAction.Create) {
+      if (!change.createEmpty && change.content === '') {
+        logger.info('File was not created because createEmpty flag is set to false:', change.filePath);
+        return;
+      }
+
+      logger.info('Creating file', change.filePath);
+      mkFile(change.filePath, change.content, () => {
+        logger.success('Created file', change.filePath);
+        runLinter(change.filePath);
+      });
+    } else {
+      logger.info('Updating file', change.filePath);
+      fs.writeFile(change.filePath, change.content, (err) => {
+        if (err) {
+          logger.info(err);
+          logger.error('Error in updateFile() function');
+        } else {
+          logger.success('Updated file', change.filePath);
+          runLinter(change.filePath);
+        }
+      });
+    }
+  }
+}
