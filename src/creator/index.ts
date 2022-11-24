@@ -191,7 +191,6 @@ function getTemplatesCount(answers: IAnswersBase, config: IConfig): number {
     const domainIndex = config.domains.findIndex((d: IConfigDomain) => d.name === domain);
 
     if (domainIndex < 0) {
-      logger.error(`Domain with name ${domain} is not in creator.config.js`);
       continue;
     }
 
