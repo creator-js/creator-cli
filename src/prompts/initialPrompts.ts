@@ -12,11 +12,13 @@ export function getInitialPrompts($initialPrompts: Subject<any>, answers: IAnswe
     return;
   }
 
-  const initialChoices: { name: string }[] = config.domains.map((d: IConfigDomain) => {
-    return {
-      name: d.name
-    };
-  });
+  const initialChoices: { name: string }[] = config.domains
+    .filter((d: IConfigDomain) => !d.hidden)
+    .map((d: IConfigDomain) => {
+      return {
+        name: d.name
+      };
+    });
 
   $initialPrompts.next({
     type: 'list',

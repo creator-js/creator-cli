@@ -12,6 +12,7 @@ export interface IConfigDomain {
   structure?: any;
   questions?: IConfigComponentQuestion[];
   next?: IConfigNext;
+  hidden?: boolean;
 }
 
 export interface IConfigTemplate {

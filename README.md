@@ -425,6 +425,19 @@ All fields of the `next` object:
 | skipStructure |             boolean             | false    | Flag to skip structure and use `filePath` from the previous domain.    |
 
 
+Sometimes we want to include domains in chaining, but exclude them from initial questions.   
+For that case, there is a field `hidden: boolean`: 
+
+```js
+{
+      name: 'hiddenDomain',
+      hidden: true,
+      templates: [
+        // ...
+      ]
+    }
+```
+
 ## <a name="miscellaneous"></a>Miscellaneous
 
 ### <a name="smart-types-import-export"></a>Smart types imports and exports

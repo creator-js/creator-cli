@@ -114,30 +114,48 @@ export default {
       },
       templates: [
         {
-          name: ({ redux: { sliceName } }) => `./redux/${sliceName}/slice.ts`,
+          name: ({ components, redux: { sliceName } }) => {
+            const prefix = components ? `/${components.componentName}` : '';
+            return `.${prefix}/redux/${sliceName}/slice.ts`;
+          },
           template: '../_templates/redux/slice.template.js'
         },
         {
-          name: ({ redux: { sliceName } }) => `./redux/${sliceName}/selectors.ts`,
+          name: ({ components, redux: { sliceName } }) => {
+            const prefix = components ? `/${components.componentName}` : '';
+            return `.${prefix}/redux/${sliceName}/selectors.ts`;
+          },
           template: '../_templates/redux/selector.template.js'
         },
         {
-          name: ({ redux: { sliceName } }) => `./redux/${sliceName}/thunks.ts`,
+          name: ({ components, redux: { sliceName } }) => {
+            const prefix = components ? `/${components.componentName}` : '';
+            return `.${prefix}/redux/${sliceName}/thunks.ts`;
+          },
           template: '../_templates/redux/thunk.template.js',
           when: ({ redux: { async } }) => async
         },
         {
-          name: ({ redux: { sliceName } }) => `./redux/${sliceName}/services.ts`,
+          name: ({ components, redux: { sliceName } }) => {
+            const prefix = components ? `/${components.componentName}` : '';
+            return `.${prefix}/redux/${sliceName}/services.ts`;
+          },
           template: '../_templates/redux/service.template.js',
           when: ({ redux: { async } }) => async
         },
         {
-          name: () => './redux/reducer.ts',
-          template: '../_templates/redux/reducer.template.js'
+          name: ({ components, redux: { sliceName } }) => {
+            const prefix = components ? `/${components.componentName}` : '';
+            return `.${prefix}/redux/${sliceName}/types.ts`;
+          },
+          template: '../_templates/redux/types.template.js'
         },
         {
-          name: ({ redux: { sliceName } }) => `./redux/${sliceName}/types.ts`,
-          template: '../_templates/redux/types.template.js'
+          name: ({ components }) => {
+            const prefix = components ? `/${components.componentName}` : '';
+            return `.${prefix}/redux/reducer.ts`;
+          },
+          template: '../_templates/redux/reducer.template.js'
         }
       ],
       questions: [
