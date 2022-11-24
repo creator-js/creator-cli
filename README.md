@@ -14,7 +14,7 @@ CreatorJS is a tool for automating boilerplate code generation.
 3. [Questions](#questions)
 4. [Templates](#templates)
 5. [Structure](#structure)
-6. [Questions chaining](#questions-chaining)
+6. [Domains chaining](#domains-chaining)
 7. [Miscellaneous](#miscellaneous)
 
 ## <a name="installation"></a>Installation
@@ -384,7 +384,7 @@ Now when you get to the `features` folder, CreatorJS will ask you to create a ne
 
 > The name after `$` does not impact anything.
 
-## <a name="questions-chaining"></a>Questions chaining
+## <a name="domains-chaining"></a>Domains chaining
 
 Sometimes you want to create files from one domain and proceed with another. 
 One of examples can be Redux, when you want to create a page and then associate it with the reducer.
