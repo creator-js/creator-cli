@@ -59,7 +59,7 @@ export default {
 
 The`name` field represents the name of the domain. When started, the CLI will first ask `What needs to be created?` question and in the list of choices there will be domain names.
 
-The `templates` field represents an array of files that will be created or updated after developer answers all questions. The only required field is `name` which represents the name of the file. By default, the file will be empty.
+The `templates` field represents an array of files that will be created or updated after the developer answers all questions. The only required field is `name` which represents the name of the file. By default, the file will be empty.
 
 Run the CLI with this simple command:
 ```shell
@@ -100,7 +100,7 @@ export default {
     ]
 };
 ```
-After running the CLI and answering questions, the `answers` object will be created. The answer to each question will be substituted to the `answers.<name>` field. 
+After running the CLI and answering questions, the `answers` object will be created. 
 
 `answers` can be used to:
 - conditionally show questions
@@ -119,7 +119,7 @@ export default {
       name: 'components',
       templates: [
         {
-          name: (answers) => `${answers.componentName}.jsx`
+          name: (answers) => `${answers.components.componentName}.jsx`
         }
       ],
       questions: [
@@ -134,16 +134,28 @@ export default {
 };
 ```
 
-After running the CLI and answering questions, the file will be created with a name that you provided when answered a question `How to name the component?`. 
+After running the CLI and answering questions, the file will be created with a name that you provided when answered a question `How to name the component?`.
 
-> `answers` vs `allAnswers`
-> 
-> Everywhere (except `questions`) where `answers` can be used inside a function, there is a second parameter called `allAnswers`.
-> The difference between them is that `answers` represent answers for the particular domain, while `allAnswers` represent answers for every domain.
-> Basically, `allAnswers.<domain>` is `answers`.
+`answers` has the following structure:
+```js
+{
+    variables: {
+        // variables from creator.config.js variables field
+    },
+    domain1: {
+        // answers for domain 1 questions
+    },
+    domain2: {
+        // answers for domain 2 questions
+    },
+    // ...
+}
+```
 
-> `allAnswers` contain `variables` from `creator.config.js`.
+The structure of answers above is valid everywhere except for `questions`. Inquirers' question is similar, but not the same.
 
+In questions, `answers` structure would represent answers for the particular domain. 
+It will not have `filePath` field, but will have system fields, like `_file_1` or `_new-folder_1`.
 
 ## <a name="templates"></a>Templates
 
@@ -153,7 +165,7 @@ Templates are `.js` files that define the contents of the files that we want to 
 
 Create a file `./templates/component.js` with this minimal configuration:
 ```js
-export default (answers, allAnswers) => {
+export default (answers) => {
   return {
     init: '',
     updates: []
@@ -165,9 +177,6 @@ export default (answers, allAnswers) => {
 
 `updates` is an array of objects defining how to update the file.
 
-Notice, that we have access to `answers` and `allAnswers`.
-
-
 ### <a name="template-initialization"></a>Initialization
 
 Let's add some initial structure of the file:
@@ -176,7 +185,7 @@ export default (answers) => {
   return {
     init: `import React from 'react';
     
-    export const ${answers.componentName} = () => {
+    export const ${answers.components.componentName} = () => {
       return <div/>
     }
     `,
@@ -195,7 +204,7 @@ export default {
       name: 'components',
       templates: [
         {
-          name: (answers) => `${answers.componentName}.jsx`,
+          name: (answers) => `${answers.components.componentName}.jsx`,
           template: '../templates/component.js'
         }
       ],
@@ -232,7 +241,7 @@ export default (answers) => {
     return {
         init: `import React from 'react'
     
-    export const ${answers.componentName} = () => {
+    export const ${answers.components.componentName} = () => {
       return <div/>
     }
     `,
@@ -267,9 +276,10 @@ All fields of update object:
 | searchFor  |      [Operator, string]       | true     | Searches for a line with a `string` within boundaries based on condition.                                                                            |
 | changeWith |            string             | true     | A string template that should change the `string` from `searchFor`.                                                                                  |
 | when       | [Operator, string] or boolean | false    | AA condition on which the substitution is performed. The condition will be checked against every line within the boundaries.                         |
-| fallback   |     update object             | false    | When the update could not be performed, the `fallback` update will be performed if provided.                                                         |
+| fallback   |         update object         | false    | When the update could not be performed, the `fallback` update will be performed if provided.                                                         |
 
 * Operator = `'includes' | 'not includes' | '===' | '!=='`
+
 ## <a name="structure"></a>Structure
 
 Structure comes in handy when there is a defined folder structure in the project.
@@ -303,7 +313,7 @@ export default {
             },
             templates: [
                 {
-                    name: (answers) => `${answers.componentName}.jsx`,
+                    name: (answers) => `${answers.components.componentName}.jsx`,
                     template: '../templates/component.template.js'
                 }
             ],
@@ -349,7 +359,7 @@ export default {
             },
             templates: [
                 {
-                    name: (answers) => `${answers.componentName}.jsx`,
+                    name: (answers) => `${answers.components.componentName}.jsx`,
                     template: '../templates/component.template.js'
                 }
             ],
@@ -408,18 +418,18 @@ export default {
 
 All fields of the `next` object:
 
-| Name          |              Type               | Required | Description                                                             |
-|---------------|:-------------------------------:|----------|:------------------------------------------------------------------------|
-| name          |          string                 | true     | The name of the next domain.                                            |
-| when          | (answers) => boolean OR boolean | false    | Condition for switching to the next domain.                             |
-| skipStructure |             boolean             | false    | Flag to skip structure and use `filePath` one from the previous domain. |
+| Name          |              Type               | Required | Description                                                            |
+|---------------|:-------------------------------:|----------|:-----------------------------------------------------------------------|
+| name          |          string                 | true     | The name of the next domain.                                           |
+| when          | (answers) => boolean OR boolean | false    | Condition for switching to the next domain.                            |
+| skipStructure |             boolean             | false    | Flag to skip structure and use `filePath` from the previous domain.    |
 
 
 ## <a name="miscellaneous"></a>Miscellaneous
 
 ### <a name="smart-types-import-export"></a>Smart types imports and exports
 
-When working with typescript, you might want to create new interfaces or types and import them in files.
+When working with typescript, you might want to create new interfaces or types and import them into files.
 However, there are primitives in JavaScript, which names are reserved. We don't want to end up importing a string or a number.
 Also, when creating an array type, we don't want to have brackets `[]` in the interfaces/type or import statement.
 

@@ -1,4 +1,4 @@
-export default ({ sliceName, reducerName }) => {
+export default ({ redux: { sliceName, reducerName } }) => {
 
   const importSliceString = `import { ${sliceName}Slice } from './${sliceName}/slice';`;
   const sliceString = `[${sliceName}Slice.name]: ${sliceName}Slice.reducer,`;

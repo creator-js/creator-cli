@@ -1,4 +1,4 @@
-export default ({ pendingType, successType }) => {
+export default ({ redux: { pendingType, successType } }) => {
   const pendingTypeString = `export interface ${pendingType} {
 }`;
   const successTypeString = `export interface ${successType} {

@@ -25,7 +25,9 @@ export function initUserPrompts($userPrompts: Subject<any>, answers: IAnswers, o
 
   if (domain.raw.questions && domain.raw.questions.length > 0) {
     domain.raw.questions.forEach((question: IConfigComponentQuestion) => {
-      $userPrompts.next(question);
+      $userPrompts.next({
+        ...question
+      });
     });
   } else {
     logger.info('No additional questions.');
@@ -46,11 +48,10 @@ export function getUserPrompts($userPrompts: Subject<any>, answers: IAnswers, co
   const domain = answers.domains[answers.currentDomain];
   domain.answers[q.name] = q.answer;
 
-  const domainAnswers = prepareAnswers(answers, config)[domain.raw.name];
-  const shouldTerminate = isTerminateConditions(answers, q, domainAnswers);
+  const shouldTerminate = isTerminateConditions(answers, q);
 
   if (shouldTerminate) {
-    const shouldGoToNextDomain = isNextDomain(domain.raw.next, domainAnswers);
+    const shouldGoToNextDomain = isNextDomain(domain.raw.next, answers, config);
 
     if (shouldGoToNextDomain) {
       onNextDomain((domain.raw.next as IConfigNext).name);
@@ -60,7 +61,7 @@ export function getUserPrompts($userPrompts: Subject<any>, answers: IAnswers, co
   }
 }
 
-function isTerminateConditions(answers: IAnswers, q: QuestionAnswer, domainAnswers: IAnswers): boolean {
+function isTerminateConditions(answers: IAnswers, q: QuestionAnswer): boolean {
   try {
     if (!answers.currentDomain) {
       logger.error('No domain provided');
@@ -78,18 +79,21 @@ function isTerminateConditions(answers: IAnswers, q: QuestionAnswer, domainAnswe
     const lastQuestion = questions[questions.length - 1];
 
     const currentQuestionIndex = questions.findIndex((qu: IConfigComponentQuestion) => qu.name === q.name);
-    const nextQuestion = questions[currentQuestionIndex + 1];
 
     const nextQuestions: boolean[] = [];
     let noMoreVisibleQuestions = false;
 
-    for (let i = currentQuestionIndex; i < questions.length; i++) {
-      if (nextQuestion?.when !== undefined) {
-        if (typeof nextQuestion.when === 'boolean') {
-          nextQuestions.push(nextQuestion.when);
+    for (let i = currentQuestionIndex + 1; i < questions.length; i++) {
+      if (questions[i].when !== undefined) {
+        const when = questions[i].when as boolean | ((answers: IAnswersBase) => boolean);
+
+        if (typeof when === 'boolean') {
+          nextQuestions.push(when);
         } else {
-          nextQuestions.push(nextQuestion.when(domainAnswers));
+          nextQuestions.push(when(domain.answers));
         }
+      } else {
+        nextQuestions.push(true);
       }
     }
 
@@ -107,7 +111,7 @@ function isTerminateConditions(answers: IAnswers, q: QuestionAnswer, domainAnswe
   }
 }
 
-function isNextDomain(nextDomain: IConfigNext | undefined, domainAnswers: IAnswersBase): boolean {
+function isNextDomain(nextDomain: IConfigNext | undefined, answers: IAnswers, config: IConfig): boolean {
   if (nextDomain === undefined) {
     return false;
   }
@@ -117,7 +121,8 @@ function isNextDomain(nextDomain: IConfigNext | undefined, domainAnswers: IAnswe
       return nextDomain.when;
     }
 
-    return nextDomain.when(domainAnswers);
+    const allAnswers = prepareAnswers(answers, config);
+    return nextDomain.when(allAnswers);
   }
 
   return true;

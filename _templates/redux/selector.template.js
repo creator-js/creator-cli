@@ -1,8 +1,8 @@
 import { capitalize } from 'creator-js-cli';
 
-export default ({ fieldName, reducerName, sliceName, successType }) => {
+export default ({ redux: { fieldName, reducerName, sliceName, successType } }) => {
 
-  const importSuccessType = `import { ${successType} } from './types';`;
+  const importSuccessType = `import { ${successType} } from '/types';`;
 
   const selectorString = `export const use${capitalize(fieldName)}Selector = () => {
   return useSelector<RootReduxState, ${successType}>((store: RootReduxState) =>
@@ -23,7 +23,11 @@ ${selectorString}
         direction: 'up',
         searchFor: ['includes', '}'],
         changeWith: `, ${successType} }`,
-        when: ['not includes', successType]
+        when: ['not includes', successType],
+        fallback: {
+          searchFor: ['includes', 'redux\';'],
+          changeWith: `redux\';\n${importSuccessType}`
+        }
       },
       {
         direction: 'up',

@@ -22,6 +22,7 @@ export function getStructurePrompts($structurePrompts: Subject<any>, answers: IA
   }
 
   const domain = answers.domains[answers.currentDomain];
+  domain.answers[q.name] = q.answer;
 
   answers.depth++;
 

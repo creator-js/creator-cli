@@ -47,7 +47,7 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
 
     templates.forEach(async (templateConfig: IConfigTemplate) => {
       try {
-        if (templateConfig.when && !templateConfig.when(answers, allAnswers)) {
+        if (templateConfig.when && !templateConfig.when(allAnswers)) {
           return;
         }
 
@@ -56,14 +56,14 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
         if (typeof templateConfig.name === 'string') {
           name = templateConfig.name;
         } else {
-          name = templateConfig.name(answers, allAnswers);
+          name = templateConfig.name(allAnswers);
         }
 
         const componentsPathNext = name.includes(allAnswers.variables.root) ? '' : answers.filePath + '/';
         const filePath = path.join(componentsPathNext, name);
 
         if (templateConfig.template) {
-          const template = typeof templateConfig.template === 'string' ? templateConfig.template : templateConfig.template(answers, allAnswers);
+          const template = typeof templateConfig.template === 'string' ? templateConfig.template : templateConfig.template(allAnswers);
           const invoker: ITemplateInvoker = (await dynamicImport(path.resolve(config.variables.root, template))).default;
 
           if (fileExists(filePath)) {
@@ -78,7 +78,7 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
               if (data && data.trim() === '') {
                 logger.info(`Re-init file ${filePath}`);
                 try {
-                  const content = invoker(answers, allAnswers).init;
+                  const content = invoker(allAnswers).init;
                   hydrateFile(filePath, content, () => {
                     logger.success('Created file', filePath);
                     runLinter(filePath);
@@ -88,7 +88,7 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
                   logger.error('Error occurred in template', template);
                 }
               } else {
-                const updates = invoker(answers, allAnswers).updates;
+                const updates = invoker(allAnswers).updates;
 
                 if (updates) {
                   logger.info(`Updating file ${filePath}`);
@@ -103,7 +103,7 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
             logger.info(`Creating file ${filePath}`);
 
             try {
-              const content = invoker(answers, allAnswers).init;
+              const content = invoker(allAnswers).init;
               createFile(filePath, content, allAnswers, templateConfig, () => {
                 logger.success('Created file', filePath);
                 runLinter(filePath);

@@ -1,10 +1,13 @@
-export default ({ componentName, routePath }) => {
+export default ({ components: { componentName, componentDetails, routePath } }) => {
 
   const routeImport = `const ${componentName} = lazy(() => import('../pages/${componentName}'));`;
+  const hasOutlet = componentDetails.includes('Outlet');
+  const childRoutesChar = hasOutlet ? '/*' : '';
+  const path = (routePath + childRoutesChar).replace(/\/\//g, '/');
 
   const routeDeclaration = `{
-        path: '${routePath}',
-        element: <${componentName} />,
+        path: '${path}',
+        element: <${componentName} />,${hasOutlet ? '\nchildren: []' : ''}
     },`;
 
   return {

@@ -1,4 +1,4 @@
-export default ({ successType, actionsName, serviceNamespace }) => {
+export default ({ redux: { actionsName, serviceNamespace, successType } }) => {
 
   const serviceString = `export const ${actionsName} = createAsyncThunk<${successType}>(
   'uar/${actionsName}',
@@ -7,10 +7,12 @@ export default ({ successType, actionsName, serviceNamespace }) => {
   },
 );`;
 
+  const importSuccessType = `import { ${successType} } from './types';`;
+
   return {
     init: `import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ${serviceNamespace} } from './services';
-import { ${successType} } from './types';
+${importSuccessType}
 
 ${serviceString}
 `,
@@ -26,6 +28,10 @@ ${serviceString}
         searchFor: ['includes', '}'],
         changeWith: `, ${successType} }`,
         when: ['not includes', successType],
+        fallback: {
+          searchFor: ['includes', 'toolkit\';'],
+          changeWith: `toolkit';\n${importSuccessType}`
+        }
       }
     ]
   };

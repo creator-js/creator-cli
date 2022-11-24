@@ -48,11 +48,12 @@ async function main() {
       if (answers.domains[domain.name] !== undefined) {
         logger.error('Recursive domain reference');
       } else {
+        const defaultFilePath = config.variables.root || '';
         answers.domains = {
           ...answers.domains,
           [domain.name]: {
             raw: domain,
-            filePath: switchConfig?.oldDomain?.filePath || config.variables.root || '',
+            filePath: switchConfig?.oldDomain?.raw.next?.skipStructure ? switchConfig?.oldDomain?.filePath || defaultFilePath : defaultFilePath,
             structure: domain.structure || undefined,
             dynamicKey: undefined,
             currentKey: undefined,
@@ -61,7 +62,7 @@ async function main() {
         };
         answers.currentDomain = domain.name;
 
-        if (switchConfig?.skipStructure || domain.structure === undefined) {
+        if (switchConfig?.oldDomain?.raw.next?.skipStructure || domain.structure === undefined) {
           initUserPrompts($userPrompts, answers, terminate);
         } else {
           getStructurePrompts($structurePrompts, answers, question, () => {
@@ -76,11 +77,9 @@ async function main() {
 
   function switchToNextDomain(nextDomain: string) {
     const oldDomain = answers.currentDomain ? answers.domains[answers.currentDomain] : undefined;
-    const skipStructure = oldDomain?.raw.next?.skipStructure || false;
 
     const switchConfig: ISwitchDomain = {
-      oldDomain,
-      skipStructure
+      oldDomain
     };
 
     const domain = config.domains.find((d: IConfigDomain) => d.name === nextDomain);
@@ -98,11 +97,11 @@ async function main() {
       const domain = config.domains.find((d: IConfigDomain) => d.name === question.answer);
       initDomainPrompts(domain, question.answer, question);
     } else {
+      getUserPrompts($userPrompts, answers, config, question, terminate, switchToNextDomain);
+
       getStructurePrompts($structurePrompts, answers, question, () => {
         initUserPrompts($userPrompts, answers, terminate);
       });
-
-      getUserPrompts($userPrompts, answers, config, question, terminate, switchToNextDomain);
     }
   }
 
