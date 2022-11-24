@@ -38,6 +38,8 @@ export async function readJSON(): Promise<IConfig> {
 
     const json = (await dynamicImport(file as string)).default;
 
+    logger.dev('json', json);
+
     if (!json) {
       return defaultConfig;
     }
