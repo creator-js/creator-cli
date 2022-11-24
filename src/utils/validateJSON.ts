@@ -29,26 +29,18 @@ export const validateJSON = (config: IConfig): boolean => {
       return false;
     }
 
-    if (domain.templates === undefined) {
-      logger.error(`Could not find templates for the domain with name "${domain.name}".`);
-      return false;
-    }
-
-    if (!Array.isArray(domain.templates)) {
-      logger.error('Field "templates" must be an array.');
-      return false;
-    }
-
-    for (const template of domain.templates) {
-      if (template.name === undefined) {
-        logger.error('Field "name" must be provided for the template.');
-        return false;
-      }
-
-      if (typeof template.name === 'string') {
-        if (template.name === '') {
-          logger.error('Field "name" of the template must not be an empty string.');
+    if (domain.templates) {
+      for (const template of domain.templates) {
+        if (template.name === undefined) {
+          logger.error('Field "name" must be provided for the template.');
           return false;
+        }
+
+        if (typeof template.name === 'string') {
+          if (template.name === '') {
+            logger.error('Field "name" of the template must not be an empty string.');
+            return false;
+          }
         }
       }
     }

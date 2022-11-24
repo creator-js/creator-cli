@@ -47,6 +47,7 @@ export default {
   domains: [
     {
       name: 'components',
+      // Templates are optional, but it does not make sense for this example
       templates: [
           {
               name: 'component.jsx'
@@ -56,6 +57,7 @@ export default {
   ]
 };
 ```
+
 
 `variables` is a dictionary of any variables that one might want to use in the templates. 
 >`root` is the only required variable.
@@ -453,7 +455,7 @@ For that case, there is a field `hidden: boolean`:
 {
       name: 'hiddenDomain',
       hidden: true,
-      templates: [
+      questions: [
         // ...
       ]
     }
@@ -461,7 +463,7 @@ For that case, there is a field `hidden: boolean`:
 
 ## <a name="miscellaneous"></a>Miscellaneous
 
-### <a name="smart-types-import-export"></a>Smart types imports and exports
+### <a name="smart-types-import-export"></a>Smart types import and export
 
 When working with typescript, you might want to create new interfaces or types and import them into files.
 However, there are primitives in JavaScript, which names are reserved. We don't want to end up importing a string or a number.

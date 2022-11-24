@@ -12,7 +12,9 @@ import {
   IConfigTemplate, IFileChange,
   ITemplateInvoker
 } from '../types/config.types';
-import { IAnswers } from '../types/types';
+import {
+  IAnswers, IAnswersBase
+} from '../types/types';
 import { dynamicImport } from '../utils/dynamicImport';
 import { logger } from '../utils/logger';
 import {
@@ -27,6 +29,9 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
   const answers = prepareAnswers(systemAnswers, config);
   logger.success('[ANSWERS]');
   console.log(answers);
+
+  const changes: IFileChange[] = [];
+  const templatesToProcessNumber = getTemplatesCount(answers, config);
 
   for (const domain in answers) {
     if (domain === 'variables') {
@@ -48,16 +53,11 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
       return;
     }
 
-    const changes: IFileChange[] = [];
-    let templatesToProcessNumber = 0;
-
     templates.forEach(async (templateConfig: IConfigTemplate) => {
       try {
         if (templateConfig.when && !templateConfig.when(answers)) {
           return;
         }
-
-        templatesToProcessNumber++;
 
         let name = '';
 
@@ -178,4 +178,37 @@ function applyChanges(changes: IFileChange[], templatesToProcessNumber: number) 
       });
     }
   }
+}
+
+function getTemplatesCount(answers: IAnswersBase, config: IConfig): number {
+  let templatesToProcessNumber = 0;
+
+  for (const domain in answers) {
+    if (domain === 'variables') {
+      continue;
+    }
+
+    const domainIndex = config.domains.findIndex((d: IConfigDomain) => d.name === domain);
+
+    if (domainIndex < 0) {
+      logger.error(`Domain with name ${domain} is not in creator.config.js`);
+      continue;
+    }
+
+    const templates = config.domains[domainIndex].templates;
+
+    if (!templates || templates.length === 0) {
+      continue;
+    }
+
+    templates.forEach((templateConfig: IConfigTemplate) => {
+      if (templateConfig.when && !templateConfig.when(answers)) {
+        return;
+      }
+
+      templatesToProcessNumber++;
+    });
+  }
+
+  return templatesToProcessNumber;
 }
