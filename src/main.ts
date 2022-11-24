@@ -44,6 +44,8 @@ async function main() {
     answers.structurePromptsPaused = false;
     answers.userPromptsPaused = true;
 
+    logger.success(`Questions for the domain with name "${domainName}"`);
+
     if (domain) {
       if (answers.domains[domain.name] !== undefined) {
         logger.error('Recursive domain reference');

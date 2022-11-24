@@ -11,11 +11,12 @@ CreatorJS is a tool for automating boilerplate code generation.
 
 1. [Installation](#installation)
 2. [Configuration and Usage](#configuration-and-usage)
-3. [Questions](#questions)
-4. [Templates](#templates)
-5. [Structure](#structure)
-6. [Domains chaining](#domains-chaining)
-7. [Miscellaneous](#miscellaneous)
+3. [Domains](#domains)
+4. [Questions](#questions)
+5. [Templates](#templates)
+6. [Structure](#structure)
+7. [Domains chaining](#domains-chaining)
+8. [Miscellaneous](#miscellaneous)
 
 ## <a name="installation"></a>Installation
 
@@ -59,12 +60,6 @@ export default {
 `variables` is a dictionary of any variables that one might want to use in the templates. 
 >`root` is the only required variable.
 
-`domains` is an array of objects that contain information about what to create. 
-
-The`name` field represents the name of the domain. When started, the CLI will first ask `What needs to be created?` question and in the list of choices there will be domain names.
-
-The `templates` field represents an array of files that will be created or updated after the developer answers all questions. The only required field is `name` which represents the name of the file. By default, the file will be empty.
-
 Run the CLI with this simple command:
 ```shell
 g
@@ -76,6 +71,14 @@ or in case of errors:
 
 After running the CLI and answering initial question with `components` option, file `./src/component.jsx` should be created.
 
+## <a name="domains"></a>Domains
+
+`domains` is an array of objects that contain information about what to create.
+
+The `name` field represents the name of the domain. When started, the CLI will first ask `What needs to be created?` question and in the list of choices there will be domain names.
+
+Domains consist of `questions`, `templates` and `structure`.
+
 ## <a name="questions"></a>Questions
 
 Questions can be added to provide more details about how to create files. CreatorJS uses [inquirer.js](https://github.com/SBoudrias/Inquirer.js#readme) to work with questions. 
@@ -83,7 +86,7 @@ If you already familiar with [API](https://github.com/SBoudrias/Inquirer.js#ques
 ```js
 export default {
     variables: {
-        root: './output'
+        root: './src'
     },
     domains: [
         {
@@ -116,7 +119,7 @@ For example, let's add a dynamic file name to our config:
 ```js
 export default {
   variables: {
-    root: './output'
+    root: './src'
   },
   domains: [
     {
@@ -202,7 +205,7 @@ And also update template in the config file:
 ```js
 export default {
   variables: {
-    root: './output'
+    root: './src'
   },
   domains: [
     {
@@ -227,6 +230,7 @@ export default {
 > Template path is relative to what is defined in the `root` variable.
 
 After running the CLI and answering questions, if the component was named "Atom" for example,  there will be a file `./src/Atom.jsx` with the contents:
+
 ```jsx
 import React from 'react';
 
@@ -234,6 +238,17 @@ export const Atom = () => {
   return <div/>;
 };
 ```
+
+In the`creator.config.js` file the `name` field of a template is not just a name of the file, but the path to this file.
+It is possible to extend path with folder, and they will be created:
+```js
+name: (answers) => `./need/more/folders/${answers.components.componentName}.jsx`
+```
+It is also possible to go up the folder structure:
+```js
+name: (answers) => `../../../${answers.components.componentName}.jsx`
+```
+Thus, it is not limited to just file name.
 
 ### <a name="template-update"></a>Update
 
@@ -251,6 +266,7 @@ export default (answers) => {
     }
     `,
         updates: [
+            // These are two required fields to perform an unpdate
             {
                 searchFor: ['includes', 'div'],
                 changeWith: 'span'
@@ -304,7 +320,7 @@ In terms of CreatorJS `structure` would look like this:
 ```js
 export default {
     variables: {
-        root: './output'
+        root: './src'
     },
     domains: [
         {
@@ -348,7 +364,7 @@ For example, let's say we want to create features on the run. Add an object to t
 ```js
 export default {
     variables: {
-        root: './output'
+        root: './src'
     },
     domains: [
         {
@@ -393,7 +409,7 @@ To chain domains, use `next` field:
 ```js
 export default {
   variables: {
-    root: './output'
+    root: './src'
   },
   domains: [
     {
