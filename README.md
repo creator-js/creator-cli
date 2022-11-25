@@ -75,11 +75,11 @@ After running the CLI and answering initial question with `components` option, f
 
 ## <a name="domains"></a>Domains
 
-`domains` is an array of objects that contain information about what to create.
+`domains` are scopes, within which `questions`, `templates` and `structure` are defined.
 
 The `name` field represents the name of the domain. When started, the CLI will first ask `What needs to be created?` question and in the list of choices there will be domain names.
 
-Domains consist of `questions`, `templates` and `structure`.
+For advanced use, domains can be chained. See [Domains chaining](#domains-chaining)
 
 ## <a name="questions"></a>Questions
 
@@ -185,7 +185,7 @@ export default (answers) => {
 
 `init` is a string with the initial content of the file.
 
-`updates` is an array of objects defining how to update the file.
+`updates` is an array of special objects that define the updates.
 
 ### <a name="template-initialization"></a>Initialization
 
@@ -203,6 +203,8 @@ export default (answers) => {
   };
 };
 ```
+For the components' name, the answer to the "componentName" question from "components" domain is substituted.
+
 And also update template in the config file:
 ```js
 export default {
@@ -293,12 +295,12 @@ All fields of update object:
 
 | Name       |             Type              | Required | Description                                                                                                                                          |
 |------------|:-----------------------------:|----------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| direction  |        'up' or 'down'         | false    | Tells, which way to scan the file. Default is `down`.                                                                                                |
+| direction  |        'up' &#124; 'down'         | false    | Tells, which way to scan the file. Default is `down`.                                                                                                |
 | fromLine   |      [Operator, string]       | false    | When `direction` is `down` the default value is the first line of the file. When `direction` is `up` the default value is the last line of the file. |
 | toLine     |      [Operator, string]       | false    | When `direction` is `down` the default value is the last line of the file. When `direction` is `up` the default value is the first line of the file. |
 | searchFor  |      [Operator, string]       | true     | Searches for a line with a `string` within boundaries based on condition.                                                                            |
 | changeWith |            string             | true     | A string template that should change the `string` from `searchFor`.                                                                                  |
-| when       | [Operator, string] or boolean | false    | A condition on which the substitution is performed. The condition will be checked against every line within the boundaries.                          |
+| when       | [Operator, string] &#124; boolean | false    | A condition on which the substitution is performed. The condition will be checked against every line within the boundaries.                          |
 | fallback   |         update object         | false    | When the update could not be performed, the `fallback` update will be performed if provided.                                                         |
 
 * Operator = `'includes' | 'not includes' | '===' | '!=='`
@@ -441,11 +443,11 @@ export default {
 
 All fields of the `next` object:
 
-| Name          |              Type               | Required | Description                                                            |
-|---------------|:-------------------------------:|----------|:-----------------------------------------------------------------------|
-| name          |          string                 | true     | The name of the next domain.                                           |
-| when          | (answers) => boolean OR boolean | false    | Condition for switching to the next domain.                            |
-| skipStructure |             boolean             | false    | Flag to skip structure and use `filePath` from the previous domain.    |
+| Name          |                 Type                  | Required | Description                                                            |
+|---------------|:-------------------------------------:|----------|:-----------------------------------------------------------------------|
+| name          |                string                 | true     | The name of the next domain.                                           |
+| when          | ((answers) => boolean) &#124; boolean | false    | Condition for switching to the next domain.                            |
+| skipStructure |                boolean                | false    | Flag to skip structure and use `filePath` from the previous domain.    |
 
 
 Sometimes we want to include domains in chaining, but exclude them from initial questions.   
@@ -485,7 +487,7 @@ export interface ISomething {}
 
 CreatorJS comes with a few useful methods for making the templates.
 
-| Name                 |                 Type                  | Description                                        |
-|----------------------|:-------------------------------------:|:---------------------------------------------------|
-| capitalize           |      (str: string) => string          | Make the first letter of the string capital.       |
-| getTypeValue         | (type: string) => string OR undefined | Returns the dummy value for the provided type.     |
+| Name                 |                    Type                     | Description                                        |
+|----------------------|:-------------------------------------------:|:---------------------------------------------------|
+| capitalize           |          (str: string) => string            | Make the first letter of the string capital.       |
+| getTypeValue         | ((type: string) => string) &#124; undefined | Returns the dummy value for the provided type.     |
