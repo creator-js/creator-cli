@@ -39,6 +39,7 @@ export interface IConfigNext {
 export interface IConfigVariablesRequired {
   root: string;
   createEmpty?: boolean
+  runLinter?: boolean
 }
 
 export type IConfigVariables = IConfigVariablesRequired & Record<string, any>;

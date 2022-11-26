@@ -95,7 +95,7 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
                     type: FileChangeAction.Update,
                     createEmpty
                   });
-                  applyChanges(changes, templatesToProcessNumber);
+                  applyChanges(changes, templatesToProcessNumber, config);
                 } catch (e) {
                   logger.info(e);
                   logger.error('Error occurred in template', template);
@@ -110,7 +110,7 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
                     type: FileChangeAction.Update,
                     createEmpty
                   });
-                  applyChanges(changes, templatesToProcessNumber);
+                  applyChanges(changes, templatesToProcessNumber, config);
                 }
               }
             });
@@ -126,7 +126,7 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
                 type: FileChangeAction.Create,
                 createEmpty
               });
-              applyChanges(changes, templatesToProcessNumber);
+              applyChanges(changes, templatesToProcessNumber, config);
             } catch (e) {
               logger.info(e);
               logger.error('Error occurred in template', template);
@@ -139,7 +139,7 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
             type: FileChangeAction.Create,
             createEmpty
           });
-          applyChanges(changes, templatesToProcessNumber);
+          applyChanges(changes, templatesToProcessNumber, config);
         }
       } catch (e) {
         logger.error(e);
@@ -148,7 +148,7 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
   }
 };
 
-function applyChanges(changes: IFileChange[], templatesToProcessNumber: number) {
+function applyChanges(changes: IFileChange[], templatesToProcessNumber: number, config: IConfig) {
   if (changes.length !== templatesToProcessNumber) {
     return;
   }
@@ -163,7 +163,7 @@ function applyChanges(changes: IFileChange[], templatesToProcessNumber: number) 
       logger.info('Creating file', change.filePath);
       mkFile(change.filePath, change.content, () => {
         logger.success('Created file', change.filePath);
-        runLinter(change.filePath);
+        config.variables?.runLinter && runLinter(change.filePath);
       });
     } else {
       logger.info('Updating file', change.filePath);
@@ -173,7 +173,7 @@ function applyChanges(changes: IFileChange[], templatesToProcessNumber: number) 
           logger.error('Error in updateFile() function');
         } else {
           logger.success('Updated file', change.filePath);
-          runLinter(change.filePath);
+          config.variables?.runLinter && runLinter(change.filePath);
         }
       });
     }

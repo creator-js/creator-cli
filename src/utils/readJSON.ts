@@ -11,7 +11,8 @@ import { IConfig } from '../types/config.types';
 const defaultConfig: IConfig = {
   variables: {
     root: './',
-    createEmpty: true
+    createEmpty: true,
+    runLinter: true
   },
   domains: []
 };
