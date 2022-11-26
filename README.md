@@ -84,11 +84,19 @@ After running the CLI and answering questions, all variables can be found in `an
 ___
 ## <a name="domains"></a>Domains
 
+<<<<<<< Updated upstream
 ### Overview
+=======
+`domains` are scopes, within which `questions`, `templates` and `structure` are defined.
+>>>>>>> Stashed changes
 
 `domains` are scopes, within which `questions`, `templates` and `structure` are defined.
 
+<<<<<<< Updated upstream
 Each domain has the following fields:
+=======
+For advanced use, domains can be chained. See [Domains chaining](#domains-chaining)
+>>>>>>> Stashed changes
 
 | Name        | Description                                                                                                                                              | Required |
 |:------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------|----------|
@@ -281,6 +289,7 @@ export default (answers) => {
 `init` is a string with the initial content of the file.
 
 `updates` is an array of special objects that define the updates.
+<<<<<<< Updated upstream
 
 The configuration for the template in `creator.config.js` has these fields:
 
@@ -291,6 +300,8 @@ The configuration for the template in `creator.config.js` has these fields:
 | when        |  [Operator, string] &#124; boolean  | The condition under which the file will be created or updated.                              | optional |
 | createEmpty |               boolean               | The flag tells whether to create empty file. Overrides `variables.createEmpty` if provided. | optional |
 
+=======
+>>>>>>> Stashed changes
 
 ### <a name="template-initialization"></a>Initialization
 
@@ -310,7 +321,13 @@ export default (answers) => {
   };
 };
 ```
+<<<<<<< Updated upstream
 Then update template in the config file:
+=======
+For the components' name, the answer to the "componentName" question from "components" domain is substituted.
+
+And also update template in the config file:
+>>>>>>> Stashed changes
 ```js
 // creator.config.js
 
@@ -400,6 +417,7 @@ export const Atom = () => {
 
 Update object has the following structure:
 
+<<<<<<< Updated upstream
 | Name       |          Type                     | Description                                                                                                                                          | Required |
 |------------|:---------------------------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------|----------|
 | direction  |        'up' &#124; 'down'         | Tells, which way to scan the file. Default is `down`.                                                                                                | optional |
@@ -409,6 +427,17 @@ Update object has the following structure:
 | changeWith |              string               | A value that should substitute `searchFor`.                                                                                                          | required |
 | when       | [Operator, string] &#124; boolean | The condition under which the substitution is performed. The condition will be tested on every line within the bounds.                               | optional |
 | fallback   |           update object           | When the update could not be performed, the `fallback` update will be performed if provided.                                                         | optional |
+=======
+| Name       |             Type              | Required | Description                                                                                                                                          |
+|------------|:-----------------------------:|----------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| direction  |        'up' &#124; 'down'         | false    | Tells, which way to scan the file. Default is `down`.                                                                                                |
+| fromLine   |      [Operator, string]       | false    | When `direction` is `down` the default value is the first line of the file. When `direction` is `up` the default value is the last line of the file. |
+| toLine     |      [Operator, string]       | false    | When `direction` is `down` the default value is the last line of the file. When `direction` is `up` the default value is the first line of the file. |
+| searchFor  |      [Operator, string]       | true     | Searches for a line with a `string` within boundaries based on condition.                                                                            |
+| changeWith |            string             | true     | A string template that should change the `string` from `searchFor`.                                                                                  |
+| when       | [Operator, string] &#124; boolean | false    | A condition on which the substitution is performed. The condition will be checked against every line within the boundaries.                          |
+| fallback   |         update object         | false    | When the update could not be performed, the `fallback` update will be performed if provided.                                                         |
+>>>>>>> Stashed changes
 
 * Operator = `'includes' | 'not includes' | '===' | '!=='`
 
@@ -592,7 +621,15 @@ export default {
 ```
 ### <a name="working-with-different-structures"></a>Working with different structures
 
+<<<<<<< Updated upstream
 Different domains can have different structures.
+=======
+| Name          |                 Type                  | Required | Description                                                            |
+|---------------|:-------------------------------------:|----------|:-----------------------------------------------------------------------|
+| name          |                string                 | true     | The name of the next domain.                                           |
+| when          | ((answers) => boolean) &#124; boolean | false    | Condition for switching to the next domain.                            |
+| skipStructure |                boolean                | false    | Flag to skip structure and use `filePath` from the previous domain.    |
+>>>>>>> Stashed changes
 
 Consider this folder structure:
 ```text
@@ -646,7 +683,11 @@ It is not required to replicate the full folder structure. Create one that is su
 ___
 ## <a name="advanced-concepts"></a>Advanced concepts
 
+<<<<<<< Updated upstream
 ### <a name="smart-types-import-export"></a>Types import and export
+=======
+### <a name="smart-types-import-export"></a>Smart types import and export
+>>>>>>> Stashed changes
 
 When working with typescript, you might want to create new interfaces or types and import them into files.
 However, there are primitives in JavaScript, which names are reserved. We don't want to end up importing a string or a number.
