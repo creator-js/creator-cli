@@ -1,3 +1,5 @@
+import { Question } from 'inquirer';
+
 import { IAnswersBase } from './types';
 
 
@@ -10,7 +12,7 @@ export interface IConfigDomain {
   name: string;
   templates: IConfigTemplate[];
   structure?: any;
-  questions?: IConfigComponentQuestion[];
+  questions?: Question[];
   next?: IConfigNext;
   hidden?: boolean;
 }
@@ -20,14 +22,6 @@ export interface IConfigTemplate {
   template: string | ((answers: IAnswersBase, allAnswers?: IAnswersBase) => string);
   when?: (answers: IAnswersBase, allAnswers?: IAnswersBase) => boolean;
   createEmpty?: boolean;
-}
-
-export interface IConfigComponentQuestion {
-  name: string;
-  message: string;
-  type: string;
-  validate?: (input: any) => boolean;
-  when?: boolean | ((answers: IAnswersBase) => boolean);
 }
 
 export interface IConfigNext {

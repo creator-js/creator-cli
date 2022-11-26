@@ -17,6 +17,7 @@ CreatorJS is a tool for automating boilerplate code generation.
 6. [Templates](#templates)
 7. [Structure](#structure)
 8. [Advanced concepts](#advanced-concepts)
+9. [Type support](#type-support)
 
 ## <a name="installation"></a>Installation
 
@@ -674,3 +675,17 @@ CreatorJS comes with a few useful methods for making the templates.
 |----------------------|:-------------------------------------------:|:---------------------------------------------------|
 | capitalize           |          (str: string) => string            | Make the first letter of the string capital.       |
 | getTypeValue         | ((type: string) => string) &#124; undefined | Returns the dummy value for the provided type.     |
+
+___
+## <a name="type-support"></a>Type support
+
+To support config types, use JSDoc `@type` notation:
+
+```js
+/** @type { import('creator-js-cli/dist/index').CreatorConfig } */
+const config = {
+  // ...
+}
+
+export default config;
+```

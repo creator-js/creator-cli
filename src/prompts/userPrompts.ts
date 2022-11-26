@@ -1,10 +1,12 @@
-import { QuestionAnswer } from 'inquirer';
+import {
+  Question, QuestionAnswer
+} from 'inquirer';
 import { Subject } from 'rxjs';
 
 import { AnyFunction } from '../types/common.types';
 import {
   IConfig,
-  IConfigComponentQuestion, IConfigNext
+  IConfigNext
 } from '../types/config.types';
 import {
   IAnswers, IAnswersBase
@@ -24,7 +26,7 @@ export function initUserPrompts($userPrompts: Subject<any>, answers: IAnswers, o
   const domain = answers.domains[answers.currentDomain];
 
   if (domain.raw.questions && domain.raw.questions.length > 0) {
-    domain.raw.questions.forEach((question: IConfigComponentQuestion) => {
+    domain.raw.questions.forEach((question: Question) => {
       $userPrompts.next({
         ...question
       });
@@ -78,7 +80,7 @@ function isTerminateConditions(answers: IAnswers, q: QuestionAnswer): boolean {
 
     const lastQuestion = questions[questions.length - 1];
 
-    const currentQuestionIndex = questions.findIndex((qu: IConfigComponentQuestion) => qu.name === q.name);
+    const currentQuestionIndex = questions.findIndex((qu: Question) => qu.name === q.name);
 
     const nextQuestions: boolean[] = [];
     let noMoreVisibleQuestions = false;
