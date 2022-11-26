@@ -16,8 +16,7 @@ CreatorJS is a tool for automating boilerplate code generation.
 5. [Questions](#questions)
 6. [Templates](#templates)
 7. [Structure](#structure)
-8. [Domains chaining](#domains-chaining)
-9. [Miscellaneous](#miscellaneous)
+8. [Advanced concepts](#advanced-concepts)
 
 ## <a name="installation"></a>Installation
 
@@ -80,23 +79,14 @@ There is a list of predefined variables.
 | runLinter   | boolean   | The flag tells whether to run ESLint after applying changes. | optional |
 
 After running the CLI and answering questions, all variables can be found in `answers.variables`.
-
 ___
 ## <a name="domains"></a>Domains
 
-<<<<<<< Updated upstream
-### Overview
-=======
-`domains` are scopes, within which `questions`, `templates` and `structure` are defined.
->>>>>>> Stashed changes
+### <a name="domains-overview"></a>Overview
 
 `domains` are scopes, within which `questions`, `templates` and `structure` are defined.
 
-<<<<<<< Updated upstream
 Each domain has the following fields:
-=======
-For advanced use, domains can be chained. See [Domains chaining](#domains-chaining)
->>>>>>> Stashed changes
 
 | Name        | Description                                                                                                                                              | Required |
 |:------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------|----------|
@@ -110,7 +100,7 @@ For advanced use, domains can be chained. See [Domains chaining](#domains-chaini
 
 
 
-### Domains chaining
+### <a name="domains-chaining"></a>Domains chaining
 
 Sometimes you want to create files from one domain and proceed with another.
 One of examples can be Redux, when you want to create a page and then associate it with the reducer.
@@ -168,7 +158,7 @@ For that case, you can hide the domain from the initial question with `hidden` f
 ___
 ## <a name="questions"></a>Questions
 
-### Overview
+### <a name="questions-overview"></a>Overview
 
 Questions can be added to provide more details about how to create files. CreatorJS uses [inquirer.js](https://github.com/SBoudrias/Inquirer.js#readme) to work with questions.
 If you already familiar with [API](https://github.com/SBoudrias/Inquirer.js#questions), that's great. Let's add a simple question to our `components` domain:
@@ -226,7 +216,7 @@ export default {
 
 After running the CLI and answering questions, the file will be created with a name that you provided when answered a question `How to name the component?`.
 
-### Answers
+### <a name="questions-answers"></a>Answers
 
 `answers` has the following structure:
 ```js
@@ -266,11 +256,10 @@ The structure of answers above is valid everywhere except for `questions`.
 In questions, `answers` structure would represent answers for the **particular domain**.
 It does not have access to other domains or variables. For example, it will have system fields, like `_file_1` or `_new-folder_1`, which are used for dynamic structure.
 In the resulting `answers` these fields are changed with `filePath`.
-
 ___
 ## <a name="templates"></a>Templates
 
-### Overview
+### <a name="templates-overview"></a>Overview
 
 Templates are `.js` files that define the contents of the files that we want to create or update.
 
@@ -289,7 +278,6 @@ export default (answers) => {
 `init` is a string with the initial content of the file.
 
 `updates` is an array of special objects that define the updates.
-<<<<<<< Updated upstream
 
 The configuration for the template in `creator.config.js` has these fields:
 
@@ -300,10 +288,8 @@ The configuration for the template in `creator.config.js` has these fields:
 | when        |  [Operator, string] &#124; boolean  | The condition under which the file will be created or updated.                              | optional |
 | createEmpty |               boolean               | The flag tells whether to create empty file. Overrides `variables.createEmpty` if provided. | optional |
 
-=======
->>>>>>> Stashed changes
 
-### <a name="template-initialization"></a>Initialization
+### <a name="templates-initialization"></a>Initialization
 
 First, create a file `./templates/component.js` with this initial structure:
 ```js
@@ -321,13 +307,7 @@ export default (answers) => {
   };
 };
 ```
-<<<<<<< Updated upstream
 Then update template in the config file:
-=======
-For the components' name, the answer to the "componentName" question from "components" domain is substituted.
-
-And also update template in the config file:
->>>>>>> Stashed changes
 ```js
 // creator.config.js
 
@@ -375,7 +355,7 @@ name: (answers) => `../../../${answers.components.componentName}.jsx`
 ```
 Thus, it is not limited to just file name.
 
-### <a name="template-update"></a>Update
+### <a name="templates-update"></a>Update
 
 Often we don't only want to create files, but also want to update already existing ones.
 
@@ -417,7 +397,6 @@ export const Atom = () => {
 
 Update object has the following structure:
 
-<<<<<<< Updated upstream
 | Name       |          Type                     | Description                                                                                                                                          | Required |
 |------------|:---------------------------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------|----------|
 | direction  |        'up' &#124; 'down'         | Tells, which way to scan the file. Default is `down`.                                                                                                | optional |
@@ -427,26 +406,14 @@ Update object has the following structure:
 | changeWith |              string               | A value that should substitute `searchFor`.                                                                                                          | required |
 | when       | [Operator, string] &#124; boolean | The condition under which the substitution is performed. The condition will be tested on every line within the bounds.                               | optional |
 | fallback   |           update object           | When the update could not be performed, the `fallback` update will be performed if provided.                                                         | optional |
-=======
-| Name       |             Type              | Required | Description                                                                                                                                          |
-|------------|:-----------------------------:|----------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| direction  |        'up' &#124; 'down'         | false    | Tells, which way to scan the file. Default is `down`.                                                                                                |
-| fromLine   |      [Operator, string]       | false    | When `direction` is `down` the default value is the first line of the file. When `direction` is `up` the default value is the last line of the file. |
-| toLine     |      [Operator, string]       | false    | When `direction` is `down` the default value is the last line of the file. When `direction` is `up` the default value is the first line of the file. |
-| searchFor  |      [Operator, string]       | true     | Searches for a line with a `string` within boundaries based on condition.                                                                            |
-| changeWith |            string             | true     | A string template that should change the `string` from `searchFor`.                                                                                  |
-| when       | [Operator, string] &#124; boolean | false    | A condition on which the substitution is performed. The condition will be checked against every line within the boundaries.                          |
-| fallback   |         update object         | false    | When the update could not be performed, the `fallback` update will be performed if provided.                                                         |
->>>>>>> Stashed changes
 
 * Operator = `'includes' | 'not includes' | '===' | '!=='`
 
 `direction`, `fromLine` and `toLine` together define the bounds within which the look-up will be performed.
-
 ___
 ## <a name="structure"></a>Structure
 
-### Overview
+### <a name="structure-overview"></a>Overview
 
 Structure comes in handy when there is a defined folder structure in the project.
 Structure is an object that represents this folder structure. Within the domain it is not required to provide the full folder structure.
@@ -590,7 +557,7 @@ Now when you get to the `features` folder, CreatorJS will ask you to create a ne
 
 The name after `$` does not impact anything.
 
-### Structural questions for domain chaining
+### <a name="structural-questions-for-domain-chaining"></a>Structural questions for domain chaining
 
 In the [domains chaining](#domains-chaining) section, we learned that it is possible to merge domains into a single questions flow.
 
@@ -619,17 +586,10 @@ export default {
 };
 
 ```
-### <a name="working-with-different-structures"></a>Working with different structures
 
-<<<<<<< Updated upstream
+## <a name="working-with-different-structures"></a>Working with different structures
+
 Different domains can have different structures.
-=======
-| Name          |                 Type                  | Required | Description                                                            |
-|---------------|:-------------------------------------:|----------|:-----------------------------------------------------------------------|
-| name          |                string                 | true     | The name of the next domain.                                           |
-| when          | ((answers) => boolean) &#124; boolean | false    | Condition for switching to the next domain.                            |
-| skipStructure |                boolean                | false    | Flag to skip structure and use `filePath` from the previous domain.    |
->>>>>>> Stashed changes
 
 Consider this folder structure:
 ```text
@@ -679,15 +639,10 @@ export default {
 ```
 
 It is not required to replicate the full folder structure. Create one that is suitable for the particular domain.
-
 ___
 ## <a name="advanced-concepts"></a>Advanced concepts
 
-<<<<<<< Updated upstream
-### <a name="smart-types-import-export"></a>Types import and export
-=======
-### <a name="smart-types-import-export"></a>Smart types import and export
->>>>>>> Stashed changes
+### Type import and export
 
 When working with typescript, you might want to create new interfaces or types and import them into files.
 However, there are primitives in JavaScript, which names are reserved. We don't want to end up importing a string or a number.
@@ -711,8 +666,7 @@ export interface ISomething {}
 
 CreatorJS ignores primitives and array brackets for `export interfaces`, `export type` and `import` statements.
 
-
-### <a name="methods"></a>Built-in methods
+### Built-in methods
 
 CreatorJS comes with a few useful methods for making the templates.
 
