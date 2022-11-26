@@ -1,3 +1,4 @@
+/** @type {import('@docusaurus/types').Config} */
 export default {
   variables: {
     root: './output',
