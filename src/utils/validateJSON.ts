@@ -3,11 +3,6 @@ import { logger } from './logger';
 import { IConfig } from '../types/config.types';
 
 export const validateJSON = (config: IConfig): boolean => {
-  if (config.variables?.root === undefined) {
-    logger.error('Could not find "variables.root" field in config file.');
-    return false;
-  }
-
   if (config.domains === undefined) {
     logger.error('Could not find "domains" field in config file.');
     return false;
