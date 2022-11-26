@@ -2,10 +2,6 @@ import {
   IConfig, IConfigVariables
 } from './src/types/config.types';
 
-export as namespace Creator;
-
-export = Config;
-
-declare interface Config extends IConfig {
+export interface Config extends Omit<IConfig, 'variables'> {
     variables?: IConfigVariables;
 }
