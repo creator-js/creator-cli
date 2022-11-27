@@ -55,8 +55,18 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
 
     templates.forEach(async (templateConfig: IConfigTemplate) => {
       try {
-        if (templateConfig.when && !templateConfig.when(answers)) {
-          return;
+        try {
+          if (templateConfig.when !== undefined) {
+            if (typeof templateConfig.when === 'boolean') {
+              if (!templateConfig.when) {
+                return;
+              }
+            } else if (templateConfig.when(answers) === false) {
+              return;
+            }
+          }
+        } catch (e) {
+          logger.error('1');
         }
 
         let name = '';
@@ -200,13 +210,19 @@ function getTemplatesCount(answers: IAnswersBase, config: IConfig): number {
       continue;
     }
 
-    templates.forEach((templateConfig: IConfigTemplate) => {
-      if (templateConfig.when && !templateConfig.when(answers)) {
-        return;
+    for (const templateConfig of templates) {
+      if (templateConfig.when !== undefined) {
+        if (typeof templateConfig.when === 'boolean') {
+          if (!templateConfig.when) {
+            continue;
+          }
+        } else if (!templateConfig.when(answers)) {
+          continue;
+        }
       }
 
       templatesToProcessNumber++;
-    });
+    }
   }
 
   return templatesToProcessNumber;
