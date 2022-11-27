@@ -23,7 +23,7 @@ export function getInitialPrompts($initialPrompts: Subject<any>, answers: IAnswe
   $initialPrompts.next({
     type: 'list',
     name: QuestionEnum.Create,
-    message: 'What needs to be created?',
+    message: 'What do you want to create?',
     choices: initialChoices
   });
 }

@@ -91,14 +91,14 @@ ___
 
 Each domain has the following fields:
 
-| Name        | Description                                                                                                                                              | Required |
-|:------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------|----------|
-| name        | The name of the domain. When started, the CLI will first ask `What needs to be created?` question and in the list of choices there will be domain names. | required |
-| questions   | Questions that will be asked in the scope of the domain.                                                                                                 | optional |
-| templates   | Files that will be created after answering domains questions.                                                                                            | optional |
-| structure   | The folder structure of the part of your application, within which you want to create new files. It does not require full structure replication.         | optional |
-| next        | The next domain to be processed after you finish answering questions for the current domain.                                                             | optional |
-| hidden      | The flag to hide domain from the initial question.                                                                                                       | optional |
+| Name        | Description                                                                                                                                                 | Required |
+|:------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|
+| name        | The name of the domain. When started, the CLI will first ask `What do you want to create?` question and in the list of choices there will be domain names.  | required |
+| questions   | Questions that will be asked in the scope of the domain.                                                                                                    | optional |
+| templates   | Files that will be created after answering domains questions.                                                                                               | optional |
+| structure   | The folder structure of the part of your application, within which you want to create new files. It does not require full structure replication.            | optional |
+| next        | The next domain to be processed after you finish answering questions for the current domain.                                                                | optional |
+| hidden      | The flag to hide domain from the initial question.                                                                                                          | optional |
 
 
 
