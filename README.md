@@ -3,7 +3,7 @@
 
 CreatorJS is a tool for automating boilerplate code creation.
 
-[Documentation](https://creator-js.web.app/docs/introduction)
+[Documentation](https://creatorjs.org/docs/introduction)
 
 [Templates examples](https://github.com/creator-js/creator/tree/main/_templates)
 
