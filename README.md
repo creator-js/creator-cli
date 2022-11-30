@@ -1,4 +1,4 @@
-# Creator.js
+# CreatorJS
 [![npm version](https://badge.fury.io/js/creator-js-cli.svg)](https://badge.fury.io/js/creator-js-cli)
 
 CreatorJS is a tool for automating boilerplate code creation.
