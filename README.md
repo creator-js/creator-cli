@@ -47,7 +47,6 @@ export default {
   domains: [
     {
       name: 'components',
-      // Templates are optional, but it does not make sense for this example
       templates: [
           {
               name: 'component.jsx'
