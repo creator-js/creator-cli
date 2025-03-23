@@ -1,6 +1,5 @@
 import { logger } from './logger';
-
-import { IConfig } from '../types/config.types';
+import type { IConfig } from '../types/config.types';
 
 export const validateJSON = (config: IConfig): boolean => {
   if (config.domains === undefined) {

@@ -1,32 +1,41 @@
 export const isValidParenthesis = (s: string): boolean => {
+
+  if (!s) return true;
+  
+  const chars: Record<string, boolean> = {
+    '{': true,
+    '}': true,
+    '[': true,
+    ']': true,
+    '(': true,
+    ')': true,
+  };
+  
   const map: Record<string, string> = {
     '}': '{',
     ']': '[',
     ')': '(',
   };
 
-  const chars: Record<string, boolean> = {
-    '}': true,
-    ']': true,
-    ')': true,
-    '{': true,
-    '[': true,
-    '(': true,
-  };
+  const stack: string[] = [];
+  
+  const len = s.length;
+  
+  if (len % 2 !== 0) return false;
 
-  const stack = [];
-
-  for (let i = 0; i < s.length; i++) {
-    if (!chars[s[i]]) {
+  for (let i = 0; i < len; i++) {
+    const char = s[i];
+    
+    if (!chars[char]) continue;
+    
+    if (map[char]) {
+      if (!stack.length || stack.pop() !== map[char]) {
+        return false;
+      }
       continue;
     }
-
-    if (stack.length > 0 && stack[stack.length - 1] === map[s[i]]) {
-      stack.pop();
-      continue;
-    }
-
-    stack.push(s[i]);
+    
+    stack.push(char);
   }
 
   return stack.length === 0;

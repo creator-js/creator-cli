@@ -1,6 +1,6 @@
-import { Question } from 'inquirer';
+import type { Question } from 'inquirer';
 
-import { IAnswersBase } from './types';
+import type { IAnswersBase } from './types';
 
 
 export interface IConfig {
@@ -62,13 +62,20 @@ export interface IDomain {
   dynamicKey: string | undefined;
   currentKey: string | undefined;
   answers: Record<string, any>;
+  createFolder?: boolean;
 }
 
 export enum TemplateUpdateOperator {
   NotIncludes = 'not includes',
   Includes = 'includes',
   Equal = '===',
-  NotEqual = '!=='
+  NotEqual = '!==',
+  StartsWith = 'starts with',
+  EndsWith = 'ends with',
+  Matches = 'matches',
+  ContainsWord = 'contains word',
+  IsEmpty = 'is empty',
+  IsNotEmpty = 'is not empty'
 }
 
 export enum TemplateUpdateDirection {

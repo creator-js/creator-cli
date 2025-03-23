@@ -1,8 +1,7 @@
 import * as fs from 'fs';
 
 import { logger } from './logger';
-
-import { AnyFunction } from '../types/common.types';
+import type { AnyFunction } from '../types/common.types';
 
 export const mkDir = (filePath: string) => {
   try {

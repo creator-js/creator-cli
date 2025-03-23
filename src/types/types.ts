@@ -1,4 +1,4 @@
-import { IDomain } from './config.types';
+import type { IDomain } from './config.types';
 
 export type IAnswersBase = Record<string, any>;
 

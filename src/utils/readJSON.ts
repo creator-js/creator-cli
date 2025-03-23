@@ -3,10 +3,9 @@ import path from 'path';
 import { dynamicImport } from './dynamicImport';
 import { logger } from './logger';
 import { fileExists } from './mk';
-
 import { validateJSON } from './validateJSON';
 
-import { IConfig } from '../types/config.types';
+import type { IConfig } from '../types/config.types';
 
 const defaultConfig: IConfig = {
   variables: {

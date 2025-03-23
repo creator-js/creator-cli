@@ -1,4 +1,4 @@
-import {
+import type {
   IConfig, IConfigVariables
 } from './types/config.types';
 import {

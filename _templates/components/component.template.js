@@ -1,126 +1,87 @@
-export default ({ components: { componentName, componentDetails } }) => {
-
-  const itemsFromRouterDom = [];
-  let routerDomImport = '';
-  let dispatchImport = '';
-  let useHistory = '';
-  let useLocation = '';
-  let useParams = '';
-  let outlet = '';
-  let formImport = '';
-  let formTemplate = '';
-  let childrenImport = false;
-  let hasProps = false;
-
-  const separator = '// -------------------------------------------------------------------------------------------------------------------';
-
-  componentDetails.forEach((o) => {
-    if (o === 'props') {
-      hasProps = true;
-    }
-
-    if (o === 'useDispatch') {
-      dispatchImport = 'import { useDispatch } from \'react-redux\';';
-    }
-
-    if (o === 'useLocation') {
-      useLocation = 'const location = useLocation();';
-      itemsFromRouterDom.push('useLocation');
-    }
-
-    if (o === 'useNavigate') {
-      useHistory = 'const navigate = useNavigate();';
-      itemsFromRouterDom.push('useNavigate');
-    }
-
-    if (o === 'useParams') {
-      useParams = 'const params = useParams();';
-      itemsFromRouterDom.push('useParams');
-    }
-
-    if (o === 'Outlet') {
-      outlet = '<Outlet/>';
-      itemsFromRouterDom.push('Outlet');
-    }
-
-    if (o === 'children') {
-      childrenImport = true;
-      hasProps = true;
-    }
-
-    if (o === 'useForm') {
-      formImport = 'import { FormProvider, useForm } from \'react-hook-form\';';
-      formTemplate = `const form = useForm({
-    defaultValues: {},
-    // resolver: yupResolver(schema)
-  });
+export default ({ components: { componentName, componentDetails = [], filePath } }) => {
+  const isPage = filePath.includes('pages');
   
-  const { handleSubmit } = form;
-  
-  const onSubmit = () => {
-    handleSubmit((data: any) => {
-      console.log(data);
-    }, (errors) => {
-      console.log(errors);
-    })();
-  };
-    
-  ${separator}
-  `;
-    }
-  });
+  // Define imports
+  const imports = [
+    'import { ReactNode } from \'react\';',
+    'import \'./index.css\';',
+  ];
 
-  if (itemsFromRouterDom.length > 0) {
-    routerDomImport = `import { ${itemsFromRouterDom.join(',')} } from 'react-router-dom';`;
+  // Collect router-dom imports
+  const routerImports = [];
+  if (componentDetails.includes('useLocation')) routerImports.push('useLocation');
+  if (componentDetails.includes('useParams')) routerImports.push('useParams');
+  if (componentDetails.includes('useNavigate')) routerImports.push('useNavigate');
+  if (componentDetails.includes('Outlet')) routerImports.push('Outlet');
+  if (routerImports.length > 0) {
+    imports.push(`import { ${routerImports.join(', ')} } from 'react-router-dom';`);
   }
 
-  const reactImport = `import React${childrenImport ? ', { ReactNode } ' : ''} from 'react';`;
-  const styleImport = `import('./${componentName}.less')`;
+  // Add other imports
+  if (componentDetails.includes('useDispatch')) {
+    imports.push('import { useDispatch } from \'react-redux\';');
+  }
+  if (componentDetails.includes('useForm')) {
+    imports.push('import { useForm } from \'react-hook-form\';');
+  }
 
-  const useDispatch = dispatchImport ? 'const dispatch = useDispatch();' : '';
+  // Define props interface (skip for pages, only add if 'props' or 'children' present)
+  let propsInterface = '';
+  const hasProps = componentDetails.includes('props');
+  const hasChildren = componentDetails.includes('children');
+  if (!isPage && (hasProps || hasChildren)) {
+    if (hasProps && hasChildren) {
+      propsInterface = `type IProps = {
+  // Add your props here
+  children: ReactNode;
+}`;
+    } else if (hasProps) {
+      propsInterface = `type IProps = {
+  // Add your props here
+}`;
+    } else if (hasChildren) {
+      propsInterface = `type IProps = {
+  children: ReactNode;
+}`;
+    }
+  }
 
-  const propsString = hasProps || childrenImport ? `{ ${childrenImport ? 'children' : ''} }: IProps` : '';
+  // Add hook declarations
+  const hooks = [];
+  if (componentDetails.includes('useDispatch')) hooks.push('const dispatch = useDispatch();');
+  if (componentDetails.includes('useLocation')) hooks.push('const location = useLocation();');
+  if (componentDetails.includes('useParams')) hooks.push('const params = useParams();');
+  if (componentDetails.includes('useNavigate')) hooks.push('const navigate = useNavigate();');
+  if (componentDetails.includes('useForm')) {
+    hooks.push('const { register, handleSubmit, formState: { errors } } = useForm();');
+  }
 
-  const formLayout = formImport ? `<FormProvider { ...form }>
-    <></>
-</FormProvider>` : '';
+  // Add children prop and Outlet
+  const childrenProp = hasChildren ? 'children' : '';
+  const outlet = componentDetails.includes('Outlet') ? '<Outlet />' : '';
+  const content = [outlet, childrenProp ? `{${childrenProp}}` : ''].filter(Boolean);
 
-  const hooks = [
-    useDispatch,
-    useLocation,
-    useHistory,
-    useParams
-  ].filter((item) => item !== '').join('\n');
-
-  const imports = [
-    reactImport,
-    styleImport,
-    dispatchImport,
-    routerDomImport,
-    formImport
-  ].filter((item) => item !== '').join('\n');
-
-  const layouts = [formLayout, outlet].filter((item) => item !== '').join('\n');
+  // Props string (empty for pages, adjust for props or children)
+  const propsString = isPage 
+    ? '()' 
+    : childrenProp || propsInterface 
+      ? `({ ${childrenProp} }${propsInterface ? ': IProps' : ''})` 
+      : '()';
 
   return {
-    init: `${imports}
+    init: `${imports.join('\n')}${propsInterface ? '\n\n' + propsInterface : ''}
 
-${hasProps ? 'interface IProps {' : ''}
-${childrenImport ? 'children: ReactNode | ReactNode[];' : ''}
-${hasProps ? '}' : ''}
-
-export const ${componentName}: React.FC${hasProps ? '<IProps>' : ''} = (${propsString}) => {
-  ${hooks}
-
-  ${separator}
-     
-  ${formTemplate}
+const ${componentName} = ${propsString} => {
+  ${hooks.join('\n  ')}
 
   return (
-    <div>
-      ${layouts}
+    <div className="${componentName.toLowerCase()}">
+      ${content.join('\n      ') || '// Component content goes here'}
     </div>
   );
-};`
+};
+
+${isPage ? `export default ${componentName};` : `export { ${componentName} };`}
+`
   };
 };

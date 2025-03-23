@@ -1,12 +1,13 @@
-import { QuestionAnswer } from 'inquirer';
-import { Subject } from 'rxjs';
+import type { QuestionAnswer } from 'inquirer';
 
+import { Subject } from 'rxjs';
 
 import fs from 'fs';
 
-import { AnyFunction } from '../types/common.types';
+import type { AnyFunction } from '../types/common.types';
+import type { IAnswers } from '../types/types';
 import {
-  Answer, IAnswers, QuestionEnum
+  Answer, QuestionEnum
 } from '../types/types';
 import { logger } from '../utils/logger';
 import { fileExists } from '../utils/mk';
@@ -41,19 +42,60 @@ export function getStructurePrompts($structurePrompts: Subject<any>, answers: IA
     domain.structure = domain.structure[domain.dynamicKey as string];
     domain.dynamicKey = undefined;
   } else if (q.name.indexOf('_file_') === 0) {
-    domain.filePath += `/${q.answer}`;
-    domain.structure = domain.structure[domain.dynamicKey || q.answer];
-    domain.dynamicKey = undefined;
+    // If we select 'index', don't add it to the filePath - files will be created directly here
+    if (q.answer === 'index') {
+      const componentName = domain.filePath.split('/').at(-1);
+      domain.answers.componentName = componentName;
+      domain.structure = domain.structure[domain.dynamicKey || q.answer];
+      domain.dynamicKey = undefined;
+    } else {
+      // For any other name, add it to filePath - a folder will be created with this name
+      domain.filePath += `/${q.answer}`;
+      domain.structure = domain.structure[domain.dynamicKey || q.answer];
+      domain.dynamicKey = undefined;
+    }
   } else if (q.name.includes(QuestionEnum.Create)) {
     // Do nothing
+  } else if (q.name === 'componentName') {
+    // Handle the component name answer and complete
+    domain.answers.componentName = q.answer;
+
+    // If createFolder is true, add the component name to the file path
+    if (domain.createFolder) {
+      domain.filePath += `/${q.answer}`;
+    }
+
+    onComplete();
+    return;
   } else {
     // Otherwise the question does not belong here
     return;
   }
 
-  if (typeof domain.structure === 'string') {
-    onComplete();
-  } else {
+  // Check if we've reached a leaf node
+  if (domain.structure && typeof domain.structure === 'object' && domain.structure.isLeaf) {
+    domain.createFolder = domain.structure.createFolder ?? false;
+
+    // If we're at a leaf node and createFolder is true, we need to create a new folder with the component name
+    if (domain.structure.createFolder) {
+      // Add the component name question to the stream
+      $structurePrompts.next({
+        type: 'input',
+        name: 'componentName',
+        message: 'How to name the component?',
+        validate: (input: string) => input !== ''
+      });
+    } else {
+      // When createFolder is false, we're already at the correct location
+      // The component name will be used for the file name, not the folder
+      onComplete();
+    }
+
+    return;
+  }
+
+  // If we have a structure object but it's not a leaf node, continue traversing
+  if (typeof domain.structure === 'object') {
     try {
       const keys = domain.structure ? Object.keys(domain.structure) : [];
       domain.dynamicKey = keys.find((k) => k[0] === '$') || undefined;
@@ -80,5 +122,7 @@ export function getStructurePrompts($structurePrompts: Subject<any>, answers: IA
       logger.info(e);
       logger.error('Could not generate dynamic structure');
     }
+  } else {
+    onComplete();
   }
 }

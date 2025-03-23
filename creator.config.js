@@ -10,37 +10,41 @@ export default {
         applications: {
           $app: {
             components: {
-              shared: '',
-              features: {
-                $feature: ''
-              },
-              popups: ''
+              isLeaf: true,
+              createFolder: true
             },
-            pages: '',
+            pages: {
+              $page: {
+                index: {
+                  isLeaf: true,
+                  createFolder: false
+                },
+                components: {
+                  isLeaf: true,
+                  createFolder: true
+                }
+              }
+            }
           }
         }
       },
       templates: [
         {
-          name: ({ components: { componentName } }) => `${componentName}/${componentName}.tsx`,
+          name: ({ components: { componentName, createFolder } }) => createFolder ? `${componentName}/index.tsx` : 'index.tsx',
           template: '../_templates/components/component.template.js'
         },
         {
-          name: ({ components: { componentName } }) => `${componentName}/${componentName}.less`,
+          name: ({ components: { componentName, createFolder } }) => createFolder ? `${componentName}/index.css` : 'index.css',
           template: '../_templates/components/styles.template.js'
         },
         {
-          name: ({ components: { componentName } }) => `${componentName}/${componentName}.test.tsx`,
+          name: ({ components: { componentName, createFolder } }) => createFolder ? `${componentName}/index.test.tsx` : 'index.test.tsx',
           template: '../_templates/components/tests.template.js'
         },
         {
-          name: ({ components: { componentName } }) => `${componentName}/index.ts`,
-          template: '../_templates/components/index.template.js'
-        },
-        {
-          name: '../router/index.tsx',
+          name: '../../router/index.tsx',
           template: '../_templates/router/index.template.js',
-          when: ({ components: { filePath } }) => filePath.includes('pages')
+          when: ({ components: { filePath } }) => filePath.includes('pages') && !filePath.includes('components')
         }
       ],
       questions: [
@@ -49,6 +53,15 @@ export default {
           message: 'How to name the component?',
           type: 'input',
           validate: (input) => input !== '',
+          when: (answers) => {
+            const values = Object.values(answers);
+            
+            if (values.includes('pages') && values.includes('index')) {
+              return false;
+            };
+
+            return true;
+          }
         },
         {
           name: 'componentDetails',
@@ -86,14 +99,20 @@ export default {
           message: 'What route?',
           type: 'input',
           validate: (input) => input !== '',
-          when: (answers) => Object.values(answers).some((v) => v === 'pages')
+          when: (answers) => {
+            const values = Object.values(answers);
+            return values.includes("pages") && values.includes('index');
+          }
         },
         {
           name: 'withReducer',
           message: 'Associate this page with reducer?',
           type: 'confirm',
           default: true,
-          when: (answers) => Object.values(answers).some((v) => v === 'pages')
+          when: (answers) => {
+            const values = Object.values(answers);
+            return values.includes("pages") && values.includes('index');
+          }
         }
       ],
       next: {

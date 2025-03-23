@@ -1,18 +1,16 @@
-import * as fs from 'fs';
+import * as fs from 'fs/promises';
 import * as path from 'path';
 
 import { fixFile } from './fixFile';
-
 import { insert } from './insert';
-
-import {
-  FileChangeAction,
+import { FileChangeAction } from '../types/config.types';
+import type {
   IConfig,
   IConfigDomain,
   IConfigTemplate, IFileChange,
   ITemplateInvoker
 } from '../types/config.types';
-import {
+import type {
   IAnswers, IAnswersBase
 } from '../types/types';
 import { dynamicImport } from '../utils/dynamicImport';
@@ -24,7 +22,7 @@ import { prepareAnswers } from '../utils/prepareAnswers';
 import { runLinter } from '../utils/runLinter';
 
 
-export default (systemAnswers: IAnswers, config: IConfig) => {
+export default async (systemAnswers: IAnswers, config: IConfig) => {
 
   const answers = prepareAnswers(systemAnswers, config);
   logger.success('[ANSWERS]');
@@ -53,20 +51,16 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
       return;
     }
 
-    templates.forEach(async (templateConfig: IConfigTemplate) => {
+    await Promise.all(templates.map(async (templateConfig: IConfigTemplate) => {
       try {
-        try {
-          if (templateConfig.when !== undefined) {
-            if (typeof templateConfig.when === 'boolean') {
-              if (!templateConfig.when) {
-                return;
-              }
-            } else if (templateConfig.when(answers) === false) {
+        if (templateConfig.when !== undefined) {
+          if (typeof templateConfig.when === 'boolean') {
+            if (!templateConfig.when) {
               return;
             }
+          } else if (templateConfig.when(answers) === false) {
+            return;
           }
-        } catch (e) {
-          logger.error('1');
         }
 
         let name = '';
@@ -86,30 +80,21 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
           const template = typeof templateConfig.template === 'string' ? templateConfig.template : templateConfig.template(answers);
           const invoker: ITemplateInvoker = (await dynamicImport(path.resolve(config.variables.root, template))).default;
 
-          if (fileExists(filePath)) {
-            fs.readFile(filePath, 'utf-8', (err, data) => {
-              if (err) {
-                logger.info(err);
-                logger.error('Error occurred while reading file', filePath);
-                return;
-              }
-
+          if (await fileExists(filePath)) {
+            try {
+              const data = await fs.readFile(filePath, 'utf-8');
+              
               if (data && data.trim() === '') {
-                try {
-                  const content = invoker(answers).init;
-                  const fixedLines = fixFile(content);
-                  const fixedContent = fixedLines.join('\n').trim();
-                  changes.push({
-                    filePath,
-                    content: fixedContent,
-                    type: FileChangeAction.Update,
-                    createEmpty
-                  });
-                  applyChanges(changes, templatesToProcessNumber, config);
-                } catch (e) {
-                  logger.info(e);
-                  logger.error('Error occurred in template', template);
-                }
+                const content = invoker(answers).init;
+                const fixedLines = fixFile(content);
+                const fixedContent = fixedLines.join('\n').trim();
+                changes.push({
+                  filePath,
+                  content: fixedContent,
+                  type: FileChangeAction.Update,
+                  createEmpty
+                });
+                await applyChanges(changes, templatesToProcessNumber, config);
               } else {
                 const updates = invoker(answers).updates;
 
@@ -120,10 +105,13 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
                     type: FileChangeAction.Update,
                     createEmpty
                   });
-                  applyChanges(changes, templatesToProcessNumber, config);
+                  await applyChanges(changes, templatesToProcessNumber, config);
                 }
               }
-            });
+            } catch (err) {
+              logger.info(err);
+              logger.error('Error occurred while reading file', filePath);
+            }
           } else {
             try {
               const content = invoker(answers).init;
@@ -136,7 +124,7 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
                 type: FileChangeAction.Create,
                 createEmpty
               });
-              applyChanges(changes, templatesToProcessNumber, config);
+              await applyChanges(changes, templatesToProcessNumber, config);
             } catch (e) {
               logger.info(e);
               logger.error('Error occurred in template', template);
@@ -149,21 +137,21 @@ export default (systemAnswers: IAnswers, config: IConfig) => {
             type: FileChangeAction.Create,
             createEmpty
           });
-          applyChanges(changes, templatesToProcessNumber, config);
+          await applyChanges(changes, templatesToProcessNumber, config);
         }
       } catch (e) {
         logger.error(e);
       }
-    });
+    }));
   }
 };
 
-function applyChanges(changes: IFileChange[], templatesToProcessNumber: number, config: IConfig) {
+async function applyChanges(changes: IFileChange[], templatesToProcessNumber: number, config: IConfig) {
   if (changes.length !== templatesToProcessNumber) {
     return;
   }
 
-  for (const change of changes) {
+  await Promise.all(changes.map(async (change) => {
     if (change.type === FileChangeAction.Create) {
       if (!change.createEmpty && change.content === '') {
         logger.info('File was not created because createEmpty flag is set to false:', change.filePath);
@@ -171,23 +159,25 @@ function applyChanges(changes: IFileChange[], templatesToProcessNumber: number, 
       }
 
       logger.info('Creating file', change.filePath);
-      mkFile(change.filePath, change.content, () => {
-        logger.success('Created file', change.filePath);
-        config.variables?.runLinter && runLinter(change.filePath);
-      });
+      await mkFile(change.filePath, change.content);
+      logger.success('Created file', change.filePath);
+      if (config.variables?.runLinter) {
+        await runLinter(change.filePath);
+      }
     } else {
       logger.info('Updating file', change.filePath);
-      fs.writeFile(change.filePath, change.content, (err) => {
-        if (err) {
-          logger.info(err);
-          logger.error('Error in updateFile() function');
-        } else {
-          logger.success('Updated file', change.filePath);
-          config.variables?.runLinter && runLinter(change.filePath);
+      try {
+        await fs.writeFile(change.filePath, change.content);
+        logger.success('Updated file', change.filePath);
+        if (config.variables?.runLinter) {
+          await runLinter(change.filePath);
         }
-      });
+      } catch (err) {
+        logger.info(err);
+        logger.error('Error in updateFile() function');
+      }
     }
-  }
+  }));
 }
 
 function getTemplatesCount(answers: IAnswersBase, config: IConfig): number {

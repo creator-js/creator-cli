@@ -1,5 +1,7 @@
-export default () => {
+export default ({ components: { componentName } }) => {
   return {
-    init: ''
+    init: `.${componentName.toLowerCase()} {
+  /* Add your styles here */
+}`
   };
 };

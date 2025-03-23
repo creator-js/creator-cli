@@ -2,7 +2,7 @@ import * as fs from 'fs';
 
 import { fixFile } from './fixFile';
 
-import { AnyFunction } from '../types/common.types';
+import type { AnyFunction } from '../types/common.types';
 import { logger } from '../utils/logger';
 
 export const hydrateFile = (filePath: string, content: string, onComplete?: AnyFunction) => {

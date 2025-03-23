@@ -1,7 +1,5 @@
-import { IConfig } from '../types/config.types';
-import {
-  IAnswers, IAnswersBase
-} from '../types/types';
+import type { IConfig } from '../types/config.types';
+import type { IAnswers, IAnswersBase } from '../types/types';
 
 export const prepareAnswers = (answers: IAnswers, config: IConfig):IAnswersBase => {
   const result: IAnswersBase = {

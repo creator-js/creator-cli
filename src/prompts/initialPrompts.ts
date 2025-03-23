@@ -1,12 +1,12 @@
 import { Subject } from 'rxjs';
 
-import {
+import type {
   IConfig, IConfigDomain
 } from '../types/config.types';
-import {
-  IAnswers, QuestionEnum
+import type {
+  IAnswers
 } from '../types/types';
-
+import { QuestionEnum } from '../types/types';
 export function getInitialPrompts($initialPrompts: Subject<any>, answers: IAnswers, config: IConfig) {
   if (answers.initialPromptsPaused) {
     return;

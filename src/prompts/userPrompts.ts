@@ -1,16 +1,9 @@
-import {
-  Question, QuestionAnswer
-} from 'inquirer';
+import type { Question, QuestionAnswer } from 'inquirer';
 import { Subject } from 'rxjs';
 
-import { AnyFunction } from '../types/common.types';
-import {
-  IConfig,
-  IConfigNext
-} from '../types/config.types';
-import {
-  IAnswers, IAnswersBase
-} from '../types/types';
+import type { AnyFunction } from '../types/common.types';
+import type { IConfig, IConfigNext } from '../types/config.types';
+import type { IAnswers, IAnswersBase } from '../types/types';
 import { logger } from '../utils/logger';
 import { prepareAnswers } from '../utils/prepareAnswers';
 
@@ -55,8 +48,8 @@ export function getUserPrompts($userPrompts: Subject<any>, answers: IAnswers, co
   if (shouldTerminate) {
     const shouldGoToNextDomain = isNextDomain(domain.raw.next, answers, config);
 
-    if (shouldGoToNextDomain) {
-      onNextDomain((domain.raw.next as IConfigNext).name);
+    if (shouldGoToNextDomain && domain.raw.next) {
+      onNextDomain(domain.raw.next.name);
     } else {
       onComplete();
     }

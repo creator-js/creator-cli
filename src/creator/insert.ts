@@ -1,161 +1,153 @@
 import { checkCondition } from './checkCondition';
-
-
 import { fixFile } from './fixFile';
-
-import {
-  IIndexes,
-  ITemplateUpdate,
-  TemplateUpdateDirection
-} from '../types/config.types';
+import type { IIndexes, ITemplateUpdate } from '../types/config.types';
+import { TemplateUpdateDirection, TemplateUpdateOperator } from '../types/config.types';
 import { logger } from '../utils/logger';
 
 export const insert = (data: string, updates: ITemplateUpdate[]): string => {
-  const lines: string[] = data.split('\n');
+  if (!data || !updates?.length) return data;
+
+  const lines = data.split('\n');
+  const lineCount = lines.length;
 
   updates_loop:
-  for (let j = 0; j < updates.length; j++) {
-    const u = updates[j];
-
-    if (!u.direction) {
-      u.direction = TemplateUpdateDirection.Down;
-    }
-
-    const indexes: IIndexes = findIndexes(lines, u);
-    const [fromIndex, toIndex] = indexes;
-
-    if (fromIndex === -1 || toIndex === -1) {
-      if (u.fallback) {
-        updates.push(u.fallback);
+  for (const update of updates) {
+    try {
+      // Validate update
+      if (!update.searchFor || !update.changeWith) {
+        logger.error('Invalid update configuration:', update);
+        continue;
       }
 
-      continue;
-    }
+      // Set default direction
+      const direction = update.direction || TemplateUpdateDirection.Down;
 
-    if (u.direction === TemplateUpdateDirection.Down) {
-      if (checkInsertCondition(lines, indexes, u)) {
+      // Find indexes once
+      const indexes = findIndexes(lines, update);
+      const [fromIndex, toIndex] = indexes;
+
+      if (fromIndex === -1 || toIndex === -1) {
+        if (update.fallback) {
+          updates.push(update.fallback);
+        }
+        continue;
+      }
+
+      // Check conditions before processing
+      if (!checkInsertCondition(lines, indexes, update)) {
+        continue;
+      }
+
+      // Process lines based on direction
+      if (direction === TemplateUpdateDirection.Down) {
         for (let i = fromIndex; i < toIndex; i++) {
-          if (checkCondition(lines[i], u.searchFor)) {
-            lines[i] = lines[i].replace(u.searchFor[1], u.changeWith);
-            continue updates_loop;
-          }
-        }
-      }
-    } else {
-      if (checkInsertCondition(lines, indexes, u)) {
-        for (let i = fromIndex; i >= toIndex; i--) {
+          if (i < 0 || i >= lineCount) continue;
 
-          if (checkCondition(lines[i], u.searchFor)) {
-            lines[i] = lines[i].replace(u.searchFor[1], u.changeWith);
+          if (checkCondition(lines[i], update.searchFor)) {
+            // Only replace the exact search string
+            if (update.searchFor[0] === TemplateUpdateOperator.Equal) {
+              lines[i] = update.changeWith;
+            } else {
+              lines[i] = lines[i].replace(update.searchFor[1], update.changeWith);
+            }
+            continue updates_loop;
+          }
+        }
+      } else {
+        for (let i = fromIndex; i >= toIndex; i--) {
+          if (i < 0 || i >= lineCount) continue;
+
+          if (checkCondition(lines[i], update.searchFor)) {
+            // Only replace the exact search string
+            if (update.searchFor[0] === TemplateUpdateOperator.Equal) {
+              lines[i] = update.changeWith;
+            } else {
+              lines[i] = lines[i].replace(update.searchFor[1], update.changeWith);
+            }
             continue updates_loop;
           }
         }
       }
+    } catch (e) {
+      logger.error('Error processing update:', e);
     }
   }
 
-  const fileContent = lines.join('\n');
-  return fixFile(fileContent).join('\n');
+  return fixFile(lines.join('\n')).join('\n');
 };
 
-function checkInsertCondition(lines: string[], indexes: IIndexes, u: ITemplateUpdate): boolean {
-  try {
-    const [fromIndex, toIndex]: IIndexes = findIndexes(lines, u);
+function findIndexes(lines: string[], update: ITemplateUpdate): IIndexes {
+  const indexes: IIndexes = [-1, -1];
+  const isDown = update.direction !== TemplateUpdateDirection.Up;
+  const lineCount = lines.length;
 
-    // [1] Single line
+  // Set default indexes based on direction
+  if (isDown) {
+    indexes[0] = update.fromLine === undefined ? 0 : -1;
+    indexes[1] = update.toLine === undefined ? lineCount - 1 : -1;
+  } else {
+    indexes[0] = update.fromLine === undefined ? lineCount - 1 : -1;
+    indexes[1] = update.toLine === undefined ? 0 : -1;
+  }
+
+  // Return if using default indexes
+  if (indexes[0] !== -1 && indexes[1] !== -1) {
+    return indexes;
+  }
+
+  // Find specific indexes based on conditions
+  if (isDown) {
+    for (let i = 0; i < lineCount; i++) {
+      if (indexes[0] === -1 && update.fromLine && checkCondition(lines[i], update.fromLine)) {
+        indexes[0] = i;
+      }
+      if (indexes[1] === -1 && update.toLine && checkCondition(lines[i], update.toLine)) {
+        indexes[1] = i;
+      }
+      if (indexes[0] !== -1 && indexes[1] !== -1) break;
+    }
+  } else {
+    for (let i = lineCount - 1; i >= 0; i--) {
+      if (indexes[0] === -1 && update.fromLine && checkCondition(lines[i], update.fromLine)) {
+        indexes[0] = i;
+      }
+      if (indexes[1] === -1 && update.toLine && checkCondition(lines[i], update.toLine)) {
+        indexes[1] = i;
+      }
+      if (indexes[0] !== -1 && indexes[1] !== -1) break;
+    }
+  }
+
+  return indexes;
+}
+
+function checkInsertCondition(lines: string[], indexes: IIndexes, update: ITemplateUpdate): boolean {
+  try {
+    const [fromIndex, toIndex] = indexes;
+
+    // Single line check
     if (fromIndex === toIndex) {
-      return checkCondition(lines[fromIndex], u.when);
+      return checkCondition(lines[fromIndex], update.when);
     }
 
-    // [2] Multiple lines
-    if (u.direction === TemplateUpdateDirection.Down) {
+    // Multiple lines check
+    if (update.direction === TemplateUpdateDirection.Down) {
       for (let i = fromIndex; i < toIndex; i++) {
-        if (!checkCondition(lines[i], u.when)) {
+        if (!checkCondition(lines[i], update.when)) {
           return false;
         }
       }
     } else {
       for (let i = fromIndex; i >= toIndex; i--) {
-        if (!checkCondition(lines[i], u.when)) {
+        if (!checkCondition(lines[i], update.when)) {
           return false;
         }
       }
     }
+
+    return true;
   } catch (e) {
-    logger.info(e);
-    logger.error('Error in checkInsertCondition() function');
+    logger.error('Error in checkInsertCondition() function:', e);
+    return false;
   }
-
-  return true;
-}
-
-function findIndexes(lines: string[], u: ITemplateUpdate): IIndexes {
-  const indexes: IIndexes = [-1, -1];
-  const isDown = u.direction === TemplateUpdateDirection.Down;
-
-  if (isDown) {
-    if (u.fromLine === undefined) {
-      indexes[0] = 0;
-    }
-
-    if (u.toLine === undefined) {
-      indexes[1] = lines.length - 1;
-    }
-  } else {
-    if (u.fromLine === undefined) {
-      indexes[0] = lines.length - 1;
-    }
-
-    if (u.toLine === undefined) {
-      indexes[1] = 0;
-    }
-  }
-
-  if (indexes[0] !== -1 && indexes[1] !== -1) {
-    return indexes;
-  }
-
-  function checkIndexes(lines: string[], i: number, u: ITemplateUpdate, indexes: IIndexes): boolean {
-    if (indexes[0] === -1 && u.fromLine && checkCondition(lines[i], u.fromLine)) {
-      indexes[0] = i;
-    }
-
-    if (indexes[1] === -1 && u.toLine && checkCondition(lines[i], u.toLine)) {
-      indexes[1] = i;
-    }
-
-    return indexes[0] !== -1 && indexes[1] !== -1;
-  }
-
-  if (isDown) {
-    for (let i = 0; i < lines.length; i++) {
-      if (checkIndexes(lines, i, u, indexes)) {
-        return indexes;
-      }
-    }
-
-    // if (indexes[0] === -1) {
-    //   indexes[0] = 0;
-    // }
-    //
-    // if (indexes[1] === -1) {
-    //   indexes[1] = lines.length - 1;
-    // }
-  } else {
-    for (let i = lines.length - 1; i >= 0; i--) {
-      if (checkIndexes(lines, i, u, indexes)) {
-        return indexes;
-      }
-    }
-
-    // if (indexes[0] === -1) {
-    //   indexes[0] = lines.length - 1;
-    // }
-    //
-    // if (indexes[1] === -1) {
-    //   indexes[1] = 0;
-    // }
-  }
-
-  return indexes;
 }

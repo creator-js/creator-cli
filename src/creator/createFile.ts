@@ -1,10 +1,10 @@
 import { fixFile } from './fixFile';
 
-import { AnyFunction } from '../types/common.types';
-import { IConfigTemplate } from '../types/config.types';
-import { IAnswersBase } from '../types/types';
 import { logger } from '../utils/logger';
 import { mkFile } from '../utils/mk';
+import type { AnyFunction } from '../types/common.types';
+import type { IConfigTemplate } from '../types/config.types';
+import type { IAnswersBase } from '../types/types';
 
 export const createFile = (filePath: string, content: string, allAnswers: IAnswersBase, templateConfig: IConfigTemplate, onComplete?: AnyFunction) => {
   try {

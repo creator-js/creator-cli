@@ -5,8 +5,7 @@ export default ({ components: { componentName, filePath } }) => {
   const exportString = isPage ? `export default ${componentName};` : `export { ${componentName} };`;
 
   return {
-    init: `/* istanbul ignore file */
-import { ${componentName} } from './${componentName}';
+    init: `import { ${componentName} } from './${componentName}';
 
 ${exportString} 
 `

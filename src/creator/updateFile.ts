@@ -1,10 +1,9 @@
 import * as fs from 'fs';
 
-
 import { insert } from './insert';
 
-import { AnyFunction } from '../types/common.types';
-import { ITemplateUpdate } from '../types/config.types';
+import type { AnyFunction } from '../types/common.types';
+import type { ITemplateUpdate } from '../types/config.types';
 import { logger } from '../utils/logger';
 
 export const updateFile = (path: string, updates: ITemplateUpdate[], onComplete?: AnyFunction) => {
